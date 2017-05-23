@@ -1,0 +1,11 @@
+{
+  "name": "Noxys_Trees",
+  "version": "0.0.2",
+  "factorio_version": "0.15",
+  "title": "Noxys Trees",
+  "author": "Noxy",
+  "contact": "donotcontactme@example.com",
+  "homepage": "https://mods.factorio.com/",
+  "description": "Makes the trees spread slowly but also die off with certain condition.",
+  "dependencies": ["base >= 0.15.0"]
+}
