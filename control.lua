@@ -307,11 +307,11 @@ function process_chunk(surface, chunk)
 					if treetocheck and treetocheck.valid == true then
 						local er = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
 						local ur = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
-						if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 1 or
-							surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 1 then
+						if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
+							surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
 							treetocheck.die()
 							global.noxy_trees.killedcount = global.noxy_trees.killedcount + 1
-						elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 1 then
+						elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
 							treetocheck.die()
 							global.noxy_trees.killedcount = global.noxy_trees.killedcount + 1
 						end
@@ -325,12 +325,6 @@ function process_chunk(surface, chunk)
 			global.noxy_trees.degradedcount = global.noxy_trees.degradedcount + #tilestoupdate
 		end
 	end
-end
-
-function count_entities_in_radius(surface, pos, r, t)
-	return surface.count_entities_filtered{
-		{{pos[1] - r, pos[2] - r}, {pos[1] + r, pos[2] + r}}, type = t
-	}
 end
 
 function spawn_trees(surface, parent, tilestoupdate, newpos)
@@ -369,16 +363,26 @@ function spawn_trees(surface, parent, tilestoupdate, newpos)
 				surface.can_place_entity{name = parent.name, position = newpos}
 			then
 				local r = settings.global["Noxys_Trees-minimum-distance-between-tree"].value / noxy_trees.fertility[tile.name]
-				if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 1 then
+				if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 0 then
 					return
 				end
+				local rp = settings.global["Noxys_Trees-minimum-distance-to-player-entities"].value
+				if rp > 0 then
+					for _, force in pairs(game.forces) do
+						if #force.players > 0 then
+							if surface.count_entities_filtered{area = {{newpos[1] - rp, newpos[2] - rp}, {newpos[1] + rp, newpos[2] + rp}}, force = force} > 0 then
+								return
+							end
+						end
+					end
+				end
 				local er = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
-				if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 1 or
-					surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 1 then
+				if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 0 or
+					surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 0 then
 					return
 				end
 				local ur = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
-				if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 1 then
+				if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 0 then
 					return
 				end
 				surface.create_entity{name = parent.name, position = newpos}

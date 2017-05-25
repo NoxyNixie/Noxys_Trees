@@ -127,7 +127,16 @@ data:extend({
 		minimum_value = 0.5,
 		default_value = 8,
 		maximum_value = 16,
-		order = "a-h-b",
+		order = "a-h-c",
+	},
+	{
+		type = "double-setting",
+		name = "Noxys_Trees-minimum-distance-to-player-entities",
+		setting_type = "runtime-global",
+		minimum_value = 0,
+		default_value = 2,
+		maximum_value = 16,
+		order = "a-h-d",
 	},
 	{
 		type = "double-setting",
