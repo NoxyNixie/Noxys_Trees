@@ -145,13 +145,15 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	["wood floors_brick speed"] = true,
 }
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
-	["grass-medium"] = 1, -- The most fertile
-	["grass"]        = 0.9,
-	["grass-dry"]    = 0.75,
-	["dirt-dark"]    = 0.45,
-	["dirt"]         = 0.35,
-	["sand-dark"]    = 0.15,
-	["sand"]         = 0.1,
+	["grass-medium"]    = 1, -- The most fertile
+	["grass"]           = 0.9,
+	["grass-dry"]       = 0.75,
+	["dirt-dark"]       = 0.45,
+	["dirt"]            = 0.35,
+	["red-desert"]      = 0.2,
+	["red-desert-dark"] = 0.15,
+	["sand-dark"]       = 0.15,
+	["sand"]            = 0.1,
 }
 noxy_trees.deathselector = {
 	"dry-tree",
