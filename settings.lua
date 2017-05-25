@@ -1,6 +1,12 @@
 data:extend({
 	-- Startup
-
+	{
+		type = "bool-setting",
+		name = "Noxys_Trees-fire-leaves-no-trees",
+		setting_type = "startup",
+		default_value = false,
+		order = "a"
+	},
 	-- Global
 	{
 		type = "bool-setting",
@@ -82,14 +88,14 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
-		name = "Noxys_Trees-maximum-trees-in-chunk-tries-neighbouring",
+		name = "Noxys_Trees-maximum-trees-in-chunk-tries-neighboring",
 		setting_type = "runtime-global",
 		default_value = true,
 		order = "a-g-a"
 	},
 	{
 		type = "int-setting",
-		name = "Noxys_Trees-maximum-trees-in-neighbouring-chunk-for-growth",
+		name = "Noxys_Trees-maximum-trees-in-neighboring-chunk-for-growth",
 		setting_type = "runtime-global",
 		minimum_value = 1,
 		default_value = 128,

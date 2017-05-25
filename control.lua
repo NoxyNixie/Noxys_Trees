@@ -2,161 +2,160 @@ local noxy_trees = {}
 
 noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["dead-dry-hairy-tree"] = true,
-	["dead-grey-trunk"] = true,
-	["dead-tree"] = true,
-	["dry-hairy-tree"] = true,
-	["dry-tree"] = true,
-	["green-coral"] = true,
+	["dead-grey-trunk"]     = true,
+	["dead-tree"]           = true,
+	["dry-hairy-tree"]      = true,
+	["dry-tree"]            = true,
+	["green-coral"]         = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles
-	["concrete"] = "stone-path",
-	["stone-path"] = true,
-	["hazard-concrete-left"] = "stone-path",
+	["concrete"]              = "stone-path",
+	["stone-path"]            = true,
+	["hazard-concrete-left"]  = "stone-path",
 	["hazard-concrete-right"] = "stone-path",
-	["lab-dark-1"] = "concrete",
-	["lab-dark-2"] = "concrete",
+	["lab-dark-1"]            = "concrete",
+	["lab-dark-2"]            = "concrete",
 	-- More Floors
-	["alien-metal"] = "circuit-floor",
-	["express-arrow-grate"] = "concrete",
-	["express-arrow-grate-right"] = "concrete",
-	["express-arrow-grate-down"] = "concrete",
-	["express-arrow-grate-left"] = "concrete",
-	["fast-arrow-grate"] = "concrete",
-	["fast-arrow-grate-right"] = "concrete",
-	["fast-arrow-grate-down"] = "concrete",
-	["fast-arrow-grate-left"] = "concrete",
-	["nitinol-arrow-grate"] = "concrete",
-	["nitinol-arrow-grate-right"] = "concrete",
-	["nitinol-arrow-grate-down"] = "concrete",
-	["nitinol-arrow-grate-left"] = "concrete",
-	["titanium-arrow-grate"] = "concrete",
+	["alien-metal"]                = "circuit-floor",
+	["express-arrow-grate"]        = "concrete",
+	["express-arrow-grate-right"]  = "concrete",
+	["express-arrow-grate-down"]   = "concrete",
+	["express-arrow-grate-left"]   = "concrete",
+	["fast-arrow-grate"]           = "concrete",
+	["fast-arrow-grate-right"]     = "concrete",
+	["fast-arrow-grate-down"]      = "concrete",
+	["fast-arrow-grate-left"]      = "concrete",
+	["nitinol-arrow-grate"]        = "concrete",
+	["nitinol-arrow-grate-right"]  = "concrete",
+	["nitinol-arrow-grate-down"]   = "concrete",
+	["nitinol-arrow-grate-left"]   = "concrete",
+	["titanium-arrow-grate"]       = "concrete",
 	["titanium-arrow-grate-right"] = "concrete",
-	["titanium-arrow-grate-down"] = "concrete",
-	["titanium-arrow-grate-left"] = "concrete",
-	["arrow-grate"] = "concrete",
-	["arrow-grate-right"] = "concrete",
-	["arrow-grate-down"] = "concrete",
-	["arrow-grate-left"] = "concrete",
-	["asphalt"] = "concrete",
-	["cobblestone"] = true,
-	["checkerboard"] = "stone-path",
-	["circuit-floor"] = "concrete",
-	["mf-concrete-black"] = "concrete",
-	["mf-concrete-blue"] = "concrete",
-	["mf-concrete-darkgrey"] = "concrete",
-	["mf-concrete-gold"] = "concrete",
-	["mf-concrete-green"] = "concrete",
-	["mf-concrete-limegreen"] = "concrete",
-	["mf-concrete-magenta"] = "concrete",
-	["mf-concrete-orange"] = "concrete",
-	["mf-concrete-pink"] = "concrete",
-	["mf-concrete-purple"] = "concrete",
-	["mf-concrete-red"] = "concrete",
-	["mf-concrete-skyblue"] = "concrete",
-	["mf-concrete-white"] = "concrete",
-	["mf-concrete-yellow"] = "concrete",
-	["mf-concrete-black"] = "concrete",
-	["cobblestone"] = true,
-	["decal1"] = "stone-path",
-	["decal2"] = "stone-path",
-	["decal3"] = "stone-path",
-	["decal4"] = "stone-path",
-	["diamond-plate"] = "concrete",
-	["mf_dirt_dark"] = true,
-	["mf_dirt"] = true,
-	["dirt_dark_blueprint"] = true,
-	["dirt_blueprint"] = true,
-	["experiment"] = "stone-path",
-	["mf_green_grass"] = true,
-	["mf_grass_dry"] = true,
-	["mf_grass_dry_blueprint"] = true,
-	["mf_green_grass_blueprint"] = true,
-	["gravel"] = true,
-	["hexagonb"] = "metal-scraps",
-	["lava"] = true,
-	["metal-scraps"] = true,
-	["redbrick"] = true,
-	["reinforced-concrete"] = "concrete",
-	["road-line"] = "asphalt",
-	["road-line-right"] = "asphalt",
-	["road-line-down"] = "asphalt",
-	["road-line-left"] = "asphalt",
-	["rusty-metal"] = "metal-scraps",
-	["rusty-grate"] = "metal-scraps",
-	["mf_sand_dark"] = true,
-	["mf_sand_light"] = true,
-	["sand_dark_blueprint"] = true,
-	["sand_light_blueprint"] = true,
-	["smooth-concrete"] = "stone-path",
-	["snow"] = true,
-	-- ["tar"] = true, -- Makes this stuff look weird (incorect edges everywhere)
-	-- ["toxic"] = tre, -- Makes this stuff look weird (incorect edges everywhere)
-	["wood-floor"] = true,
-	["darkwood"] = true,
-	["herringbone"] = true,
-	["yellowbrick"] = true,
+	["titanium-arrow-grate-down"]  = "concrete",
+	["titanium-arrow-grate-left"]  = "concrete",
+	["arrow-grate"]                = "concrete",
+	["arrow-grate-right"]          = "concrete",
+	["arrow-grate-down"]           = "concrete",
+	["arrow-grate-left"]           = "concrete",
+	["asphalt"]                    = "concrete",
+	["cobblestone"]                = true,
+	["checkerboard"]               = "stone-path",
+	["circuit-floor"]              = "concrete",
+	["mf-concrete-black"]          = "concrete",
+	["mf-concrete-blue"]           = "concrete",
+	["mf-concrete-darkgrey"]       = "concrete",
+	["mf-concrete-gold"]           = "concrete",
+	["mf-concrete-green"]          = "concrete",
+	["mf-concrete-limegreen"]      = "concrete",
+	["mf-concrete-magenta"]        = "concrete",
+	["mf-concrete-orange"]         = "concrete",
+	["mf-concrete-pink"]           = "concrete",
+	["mf-concrete-purple"]         = "concrete",
+	["mf-concrete-red"]            = "concrete",
+	["mf-concrete-skyblue"]        = "concrete",
+	["mf-concrete-white"]          = "concrete",
+	["mf-concrete-yellow"]         = "concrete",
+	["mf-concrete-black"]          = "concrete",
+	["cobblestone"]                = true,
+	["decal1"]                     = "stone-path",
+	["decal2"]                     = "stone-path",
+	["decal3"]                     = "stone-path",
+	["decal4"]                     = "stone-path",
+	["diamond-plate"]              = "concrete",
+	["mf_dirt_dark"]               = true,
+	["mf_dirt"]                    = true,
+	["dirt_dark_blueprint"]        = true,
+	["dirt_blueprint"]             = true,
+	["experiment"]                 = "stone-path",
+	["mf_green_grass"]             = true,
+	["mf_grass_dry"]               = true,
+	["mf_grass_dry_blueprint"]     = true,
+	["mf_green_grass_blueprint"]   = true,
+	["gravel"]                     = true,
+	["hexagonb"]                   = "metal-scraps",
+	["lava"]                       = true,
+	["metal-scraps"]               = true,
+	["redbrick"]                   = true,
+	["reinforced-concrete"]        = "concrete",
+	["road-line"]                  = "asphalt",
+	["road-line-right"]            = "asphalt",
+	["road-line-down"]             = "asphalt",
+	["road-line-left"]             = "asphalt",
+	["rusty-metal"]                = "metal-scraps",
+	["rusty-grate"]                = "metal-scraps",
+	["mf_sand_dark"]               = true,
+	["mf_sand_light"]              = true,
+	["sand_dark_blueprint"]        = true,
+	["sand_light_blueprint"]       = true,
+	["smooth-concrete"]            = "stone-path",
+	["snow"]                       = true,
+	-- ["tar"]                     = true, -- Makes this stuff look weird (incorrect edges everywhere)
+	-- ["toxic"]                   = true, -- Makes this stuff look weird (incorrect edges everywhere)
+	["wood-floor"]                 = true,
+	["darkwood"]                   = true,
+	["herringbone"]                = true,
+	["yellowbrick"]                = true,
 	-- Asphalt Roads
-	["Arci-asphalt"] = "concrete",
+	["Arci-asphalt"]                           = "concrete",
 	["Arci-asphalt-zebra-crossing-horizontal"] = "Arci-asphalt",
-	["Arci-asphalt-zebra-crossing-vertical"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-white-left"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-white-right"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-yellow-left"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-yellow-right"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-red-left"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-red-right"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-blue-left"] = "Arci-asphalt",
-	["Arci-asphalt-hazard-blue-right"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-ns"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-swne"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-we"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-nwse"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-ns"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-swne"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-we"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-nwse"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-sne"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-wse"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-nsw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-enw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-snw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-wne"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-nse"] = "Arci-asphalt",
-	["Arci-asphalt-marking-white-esw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-sne"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-nsw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-enw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-snw"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-wne"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-nse"] = "Arci-asphalt",
-	["Arci-asphalt-marking-yellow-esw"] = "Arci-asphalt",
+	["Arci-asphalt-zebra-crossing-vertical"]   = "Arci-asphalt",
+	["Arci-asphalt-hazard-white-left"]         = "Arci-asphalt",
+	["Arci-asphalt-hazard-white-right"]        = "Arci-asphalt",
+	["Arci-asphalt-hazard-yellow-left"]        = "Arci-asphalt",
+	["Arci-asphalt-hazard-yellow-right"]       = "Arci-asphalt",
+	["Arci-asphalt-hazard-red-left"]           = "Arci-asphalt",
+	["Arci-asphalt-hazard-red-right"]          = "Arci-asphalt",
+	["Arci-asphalt-hazard-blue-left"]          = "Arci-asphalt",
+	["Arci-asphalt-hazard-blue-right"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-ns"]          = "Arci-asphalt",
+	["Arci-asphalt-marking-white-swne"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-white-we"]          = "Arci-asphalt",
+	["Arci-asphalt-marking-white-nwse"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-ns"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-swne"]       = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-we"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-nwse"]       = "Arci-asphalt",
+	["Arci-asphalt-marking-white-sne"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-wse"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-nsw"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-enw"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-snw"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-wne"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-nse"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-white-esw"]         = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-sne"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-nsw"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-enw"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-snw"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-wne"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-nse"]        = "Arci-asphalt",
+	["Arci-asphalt-marking-yellow-esw"]        = "Arci-asphalt",
 	-- Dectorio
-	["dect-wood-floor"] = true,
-	["dect-paint-hazard-left"] = "stone-path",
-	["dect-paint-hazard-right"] = "stone-path",
-	["dect-paint-emergency-left"] = "stone-path",
+	["dect-wood-floor"]            = true,
+	["dect-paint-hazard-left"]     = "stone-path",
+	["dect-paint-hazard-right"]    = "stone-path",
+	["dect-paint-emergency-left"]  = "stone-path",
 	["dect-paint-emergency-right"] = "stone-path",
-	["dect-paint-safety-left"] = "stone-path",
-	["dect-paint-safety-right"] = "stone-path",
-	["dect-paint-radiation-left"] = "stone-path",
+	["dect-paint-safety-left"]     = "stone-path",
+	["dect-paint-safety-right"]    = "stone-path",
+	["dect-paint-radiation-left"]  = "stone-path",
 	["dect-paint-radiation-right"] = "stone-path",
 	-- Other mods
 	["wood floors_brick speed"] = true,
 }
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
 	["grass-medium"] = 1, -- The most fertile
-	["grass"] = 0.95,
-	["grass-dry"] = 0.75,
-	["dirt-dark"] = 0.5,
-	["dirt"] = 0.25,
+	["grass"]        = 0.75,
+	["grass-dry"]    = 0.5,
+	["dirt-dark"]    = 0.1,
 }
 
-local neighbours = {
+local neighbors = {
 	{-1, -1}, {-1, 0}, {-1, 1},
 	{ 0, -1},          { 0, 1},
 	{ 1, -1}, { 1, 0}, { 1, 1}}
-local directneighbours = {
+local directneighbors = {
 						{-1, 0},
 	{ 0, -1},          { 0, 1},
 						{ 1, 0}}
@@ -167,15 +166,15 @@ local function round(num, numDecimalPlaces)
 end
 
 local function initglobal()
-	global.noxy_trees = {}
-	global.noxy_trees.chunks = {}
-	global.noxy_trees.tick = 0
-	global.noxy_trees.rng = game.create_random_generator()
-	global.noxy_trees.spawnedcount = 0
-	global.noxy_trees.killedcount = 0
-	global.noxy_trees.degradedcount = 0
+	global.noxy_trees                  = {}
+	global.noxy_trees.chunks           = {}
+	global.noxy_trees.tick             = 0
+	global.noxy_trees.rng              = game.create_random_generator()
+	global.noxy_trees.spawnedcount     = 0
+	global.noxy_trees.killedcount      = 0
+	global.noxy_trees.degradedcount    = 0
 	global.noxy_trees.lastdebugmessage = 0
-	global.noxy_trees.lasttotalchunks = 0
+	global.noxy_trees.lasttotalchunks  = 0
 end
 
 local function nx_debug(message)
@@ -264,21 +263,19 @@ function process_chunk(surface, chunk)
 		local trees = get_trees_in_chunk(surface, chunk)
 		local trees_count = table.maxn(trees)
 		if trees_count >= settings.global["Noxys_Trees-maximum-trees-per-chunk"].value then
-			if settings.global["Noxys_Trees-maximum-trees-in-chunk-tries-neighbouring"].value then
+			if settings.global["Noxys_Trees-maximum-trees-in-chunk-tries-neighboring"].value then
 				local parent = trees[global.noxy_trees.rng(1, trees_count)]
-				for _, v in pairs(neighbours) do
-					local ntrees = get_trees_in_chunk(surface, {x = chunk.x + v[1], y = chunk.y + v[2]})
-					if table.maxn(ntrees) < settings.global["Noxys_Trees-maximum-trees-in-neighbouring-chunk-for-growth"].value then
-						local distance = settings.global["Noxys_Trees-expansion-distance"].value
-						local npos = {
-							nx_random((chunk.x + v[1]) * 32, (chunk.x + v[1]) * 32 + (v[1] * distance)), 
-							nx_random((chunk.x + v[2]) * 32, (chunk.x + v[2]) * 32 + (v[2] * distance))
-						}
-						spawn_trees(surface, parent, tilestoupdate, npos)
-						break
-					end
+				local v = neighbors[global.noxy_trees.rng(#neighbors)]
+				local ntrees = get_trees_in_chunk(surface, {x = chunk.x + v[1], y = chunk.y + v[2]})
+				if table.maxn(ntrees) < settings.global["Noxys_Trees-maximum-trees-in-neighboring-chunk-for-growth"].value then
+					local distance = settings.global["Noxys_Trees-expansion-distance"].value
+					local npos = {
+						nx_random((chunk.x + v[1]) * 32 + (v[1] < 0 and 32 or 0), (chunk.x + v[1]) * 32 + ((v[1] < 0 and 32 or 0) + (v[1] * distance))),
+						nx_random((chunk.y + v[2]) * 32 + (v[2] < 0 and 32 or 0), (chunk.y + v[2]) * 32 + ((v[2] < 0 and 32 or 0) + (v[2] * distance)))
+					}
+					spawn_trees(surface, parent, tilestoupdate, npos)
 				end
-			end -- settings.global["Noxys_Trees-maximum-trees-in-chunk-tries-neighbouring"].value
+			end -- settings.global["Noxys_Trees-maximum-trees-in-chunk-tries-neighboring"].value
 			if settings.global["Noxys_Trees-overpopulation-kills-trees"].value then
 				local tokill = 1 + (trees_count / settings.global["Noxys_Trees-maximum-trees-per-chunk"].value)
 				repeat
