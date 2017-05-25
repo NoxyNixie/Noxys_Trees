@@ -153,6 +153,16 @@ noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no
 	["sand-dark"]    = 0.05,
 	["sand"]         = 0.025,
 }
+noxy_trees.deathselector = {
+	"dry-tree",
+	"dry-hairy-tree"
+}
+noxy_trees.dead = {
+	["dry-tree"]       = "dead-grey-trunk",
+	["dry-hairy-tree"] = "dead-dry-hairy-tree",
+	["dead-grey-trunk"] = true,
+	["dead-dry-hairy-tree"] = true
+}
 
 local neighbors = {
 	{-1, -1}, {-1, 0}, {-1, 1},
@@ -174,6 +184,7 @@ local function initglobal()
 	global.noxy_trees.tick             = 0
 	global.noxy_trees.rng              = game.create_random_generator()
 	global.noxy_trees.spawnedcount     = 0
+	global.noxy_trees.deadedcount      = 0
 	global.noxy_trees.killedcount      = 0
 	global.noxy_trees.degradedcount    = 0
 	global.noxy_trees.lastdebugmessage = 0
@@ -187,14 +198,15 @@ local function nx_debug(message)
 end
 
 script.on_configuration_changed(function()
-	if not global.noxy_trees or not global.noxy_trees.degradedcount then initglobal() end
+	if not global.noxy_trees or not global.noxy_trees.deadedcount then initglobal() end
 end)
 
 script.on_init(function()
-	if not global.noxy_trees or not global.noxy_trees.degradedcount then initglobal() end
+	if not global.noxy_trees or not global.noxy_trees.deadedcount then initglobal() end
 end)
 
 script.on_event({defines.events.on_tick}, function()
+	if not global.noxy_trees or not global.noxy_trees.deadedcount then initglobal() end
 	if settings.global["Noxys_Trees-enabled"].value then
 		global.noxy_trees.tick = global.noxy_trees.tick - 1
 		if settings.global["Noxys_Trees-debug"].value then
@@ -202,13 +214,15 @@ script.on_event({defines.events.on_tick}, function()
 				local timegap = (game.tick - global.noxy_trees.lastdebugmessage) / 60
 				nx_debug("Chunks: " .. #global.noxy_trees.chunks .. "/" .. global.noxy_trees.lasttotalchunks .. ". Stats: "
 						.. "Grown: " .. global.noxy_trees.spawnedcount .. " (" .. round(global.noxy_trees.spawnedcount / timegap, 2) .. "/s)."
+						.. "Deaded: " .. global.noxy_trees.deadedcount .. " (" .. round(global.noxy_trees.deadedcount / timegap, 2) .. "/s)."
 						.. "Killed: " .. global.noxy_trees.killedcount .. " (" .. round(global.noxy_trees.killedcount / timegap, 2) .. "/s)."
 						.. "Degrade: " .. global.noxy_trees.degradedcount .. " (" .. round(global.noxy_trees.degradedcount / timegap, 2) .. "/s)."
 					)
 				global.noxy_trees.lastdebugmessage = game.tick
-				global.noxy_trees.spawnedcount = 0
-				global.noxy_trees.killedcount = 0
-				global.noxy_trees.degradedcount = 0
+				global.noxy_trees.spawnedcount     = 0
+				global.noxy_trees.deadedcount      = 0
+				global.noxy_trees.killedcount      = 0
+				global.noxy_trees.degradedcount    = 0
 			end
 		end
 		if global.noxy_trees.tick <= 0 or global.noxy_trees.tick == nil then
@@ -260,6 +274,24 @@ function nx_random(a, b)
 	end
 end
 
+function deadening_tree(surface, tree)
+	if noxy_trees.dead[tree.name] then
+		if noxy_trees.dead[tree.name] == true then
+			tree.die()
+			global.noxy_trees.killedcount = global.noxy_trees.killedcount + 1
+		else
+			surface.create_entity{name = noxy_trees.dead[tree.name], position = tree.position}
+			tree.die()
+			global.noxy_trees.deadedcount = global.noxy_trees.deadedcount + 1
+		end
+	else
+		local deadtree = noxy_trees.deathselector[global.noxy_trees.rng(1, #noxy_trees.deathselector)]
+		surface.create_entity{name = deadtree, position = tree.position}
+		tree.die()
+		global.noxy_trees.deadedcount = global.noxy_trees.deadedcount + 1
+	end
+end
+
 function process_chunk(surface, chunk)
 	if chunk ~= nil then
 		local tilestoupdate = {}
@@ -284,8 +316,7 @@ function process_chunk(surface, chunk)
 				repeat
 					local tree = trees[global.noxy_trees.rng(1, trees_count)]
 					if tree and tree.valid == true then
-						tree.die()
-						global.noxy_trees.killedcount = global.noxy_trees.killedcount + 1
+						deadening_tree(surface, tree)
 						tokill = tokill - 1
 					end
 				until tokill < 1
@@ -309,11 +340,9 @@ function process_chunk(surface, chunk)
 						local ur = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
 						if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
 							surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
-							treetocheck.die()
-							global.noxy_trees.killedcount = global.noxy_trees.killedcount + 1
+							deadening_tree(surface, treetocheck)
 						elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
-							treetocheck.die()
-							global.noxy_trees.killedcount = global.noxy_trees.killedcount + 1
+							deadening_tree(surface, treetocheck)
 						end
 					end
 					tokill = tokill - 1
