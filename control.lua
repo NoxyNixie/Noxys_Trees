@@ -146,9 +146,12 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 }
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
 	["grass-medium"] = 1, -- The most fertile
-	["grass"]        = 0.75,
-	["grass-dry"]    = 0.5,
-	["dirt-dark"]    = 0.1,
+	["grass"]        = 0.9,
+	["grass-dry"]    = 0.75,
+	["dirt-dark"]    = 0.25,
+	["dirt"]         = 0.125,
+	["sand-dark"]    = 0.05,
+	["sand"]         = 0.025,
 }
 
 local neighbors = {
@@ -270,8 +273,8 @@ function process_chunk(surface, chunk)
 				if table.maxn(ntrees) < settings.global["Noxys_Trees-maximum-trees-in-neighboring-chunk-for-growth"].value then
 					local distance = settings.global["Noxys_Trees-expansion-distance"].value
 					local npos = {
-						nx_random((chunk.x + v[1]) * 32 + (v[1] < 0 and 32 or 0), (chunk.x + v[1]) * 32 + ((v[1] < 0 and 32 or 0) + (v[1] * distance))),
-						nx_random((chunk.y + v[2]) * 32 + (v[2] < 0 and 32 or 0), (chunk.y + v[2]) * 32 + ((v[2] < 0 and 32 or 0) + (v[2] * distance)))
+						nx_random((chunk.x + v[1]) * 32 + (v[1] < 0 and 32 or 0), (chunk.x + v[1]) * 32 + ((v[1] < 0 and 32 or 0) + (v[1] * distance))) + (global.noxy_trees.rng() - 0.5),
+						nx_random((chunk.y + v[2]) * 32 + (v[2] < 0 and 32 or 0), (chunk.y + v[2]) * 32 + ((v[2] < 0 and 32 or 0) + (v[2] * distance))) + (global.noxy_trees.rng() - 0.5)
 					}
 					spawn_trees(surface, parent, tilestoupdate, npos)
 				end
@@ -365,7 +368,7 @@ function spawn_trees(surface, parent, tilestoupdate, newpos)
 				noxy_trees.fertility[tile.name] > global.noxy_trees.rng() and
 				surface.can_place_entity{name = parent.name, position = newpos}
 			then
-				local r = settings.global["Noxys_Trees-minimum-distance-between-tree"].value
+				local r = settings.global["Noxys_Trees-minimum-distance-between-tree"].value / noxy_trees.fertility[tile.name]
 				if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 1 then
 					return
 				end
