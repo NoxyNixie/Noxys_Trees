@@ -152,7 +152,7 @@ data:extend({
 		name = "Noxys_Trees-deaths-by-pollution-bias",
 		setting_type = "runtime-global",
 		minimum_value = 0,
-		default_value = 3500,
+		default_value = 7000,
 		maximum_value = 100000,
 		order = "a-h-f",
 	},
