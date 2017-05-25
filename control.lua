@@ -148,19 +148,19 @@ noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no
 	["grass-medium"] = 1, -- The most fertile
 	["grass"]        = 0.9,
 	["grass-dry"]    = 0.75,
-	["dirt-dark"]    = 0.25,
-	["dirt"]         = 0.125,
-	["sand-dark"]    = 0.05,
-	["sand"]         = 0.025,
+	["dirt-dark"]    = 0.45,
+	["dirt"]         = 0.35,
+	["sand-dark"]    = 0.15,
+	["sand"]         = 0.1,
 }
 noxy_trees.deathselector = {
 	"dry-tree",
 	"dry-hairy-tree"
 }
 noxy_trees.dead = {
-	["dry-tree"]       = "dead-grey-trunk",
-	["dry-hairy-tree"] = "dead-dry-hairy-tree",
-	["dead-grey-trunk"] = true,
+	["dry-tree"]            = "dead-grey-trunk",
+	["dry-hairy-tree"]      = "dead-dry-hairy-tree",
+	["dead-grey-trunk"]     = true,
 	["dead-dry-hairy-tree"] = true
 }
 
@@ -262,7 +262,7 @@ script.on_event({defines.events.on_tick}, function()
 end)
 
 function get_trees_in_chunk(surface, chunk)
-	return surface.find_entities_filtered{area = {{ chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 31, chunk.y * 32 + 31}}, type = "tree"}
+	return surface.find_entities_filtered{area = {{ chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}, type = "tree"}
 end
 
 function nx_random(a, b)
@@ -321,8 +321,9 @@ function process_chunk(surface, chunk)
 					end
 				until tokill < 1
 			end
-		else -- trees_count >= settings.global["Noxys_Trees-maximum-trees-per-chunk"].value
-			if trees_count < 1 then return end
+		elseif trees_count < 1 then
+			return
+		else
 			-- Grow new trees
 			local togen = 1 + math.ceil(trees_count * settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value)
 			repeat
@@ -330,24 +331,62 @@ function process_chunk(surface, chunk)
 				spawn_trees(surface, parent, tilestoupdate)
 				togen = togen - 1
 			until togen <= 0
-			-- Check random trees for things that would kill them nearby (enemies / uranium)
-			if settings.global["Noxys_Trees-kill-trees-near-unwanted"].value then
-				local tokill = 1 + math.ceil(trees_count * settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value)
-				repeat
-					local treetocheck = trees[global.noxy_trees.rng(1, trees_count)]
+		end
+		if trees_count < 1 then return end
+		-- Check random trees for things that would kill them nearby (enemies / uranium / players / fertility)
+		if settings.global["Noxys_Trees-kill-trees-near-unwanted"].value then
+			local tokill = 1 + math.ceil(trees_count * settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value)
+			if settings.global["Noxys_Trees-deaths-by-pollution-bias"].value > 0 then
+				tokill = tokill + math.ceil(surface.get_pollution{chunk.x * 32 + 16, chunk.y * 32 + 16} / settings.global["Noxys_Trees-deaths-by-pollution-bias"].value)
+			end
+			repeat
+				local treetocheck = trees[global.noxy_trees.rng(1, trees_count)]
+				if treetocheck and treetocheck.valid == true then
+					local er = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
+					local ur = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
+					if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
+						surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
+						deadening_tree(surface, treetocheck)
+					elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+						deadening_tree(surface, treetocheck)
+					else
+						local rp = settings.global["Noxys_Trees-minimum-distance-to-player-entities"].value
+						if rp > 0 then
+							for _, force in pairs(game.forces) do
+								if #force.players > 0 then
+									if surface.count_entities_filtered{area = {{treetocheck.position.x - rp, treetocheck.position.y - rp}, {treetocheck.position.x + rp, treetocheck.position.y + rp}}, force = force} > 0 then
+										deadening_tree(surface, treetocheck)
+										break
+									end
+								end
+							end
+						end
+					end
+				end
+				if treetocheck and treetocheck.valid == true then
+					local tile = surface.get_tile(treetocheck.position.x, treetocheck.position.y)
+					if tile and tile.valid == true then
+						local fertility = 0
+						if noxy_trees.fertility[tile.name] then
+							fertility = noxy_trees.fertility[tile.name]
+						end
+						if fertility < settings.global["Noxys_Trees-deaths-by-lack-of-fertility-minimum"].value 
+							and fertility < global.noxy_trees.rng() then
+							if trees_count / settings.global["Noxys_Trees-maximum-trees-per-chunk"].value > global.noxy_trees.rng() then
+								deadening_tree(surface, treetocheck)
+							end
+						end
+					end
+				end
+				if settings.global["Noxys_Trees-deaths-by-pollution-bias"].value > 0 then
 					if treetocheck and treetocheck.valid == true then
-						local er = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
-						local ur = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
-						if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
-							surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
-							deadening_tree(surface, treetocheck)
-						elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+						if surface.get_pollution{treetocheck.position.x, treetocheck.position.y} / settings.global["Noxys_Trees-deaths-by-pollution-bias"].value > 1 + global.noxy_trees.rng() then
 							deadening_tree(surface, treetocheck)
 						end
 					end
-					tokill = tokill - 1
-				until tokill <= 0
-			end
+				end
+				tokill = tokill - 1
+			until tokill <= 0
 		end
 		if #tilestoupdate > 0 then
 			surface.set_tiles(tilestoupdate)
