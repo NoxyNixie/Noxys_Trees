@@ -145,6 +145,7 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	["wood floors_brick speed"] = true,
 }
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
+	-- Vanilla
 	["grass-medium"]    = 1, -- The most fertile
 	["grass"]           = 0.9,
 	["grass-dry"]       = 0.75,
@@ -154,6 +155,37 @@ noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no
 	["red-desert-dark"] = 0.15,
 	["sand-dark"]       = 0.15,
 	["sand"]            = 0.1,
+	-- Alien biomes
+	["grass-red"]         = 1,
+	["grass-orange"]      = 1,
+	["grass-yellow"]      = 1,
+	["grass-yellow-fade"] = 0.9,
+	["grass-purple-fade"] = 0.9,
+	["grass-purple"]      = 1,
+	["dirt-red-dark"]     = 0.45,
+	["dirt-brown-dark"]   = 0.45,
+	["grass-blue-fade"]   = 0.9,
+	["grass-blue"]        = 1,
+	["dirt-red"]          = 0.35,
+	["dirt-brown"]        = 0.35,
+	["dirt-tan-dark"]     = 0.45,
+	["dirt-dull-dark"]    = 0.45,
+	["dirt-grey-dark"]    = 0.45,
+	["dirt-tan"]          = 0.25,
+	["dirt-dull"]         = 0.25,
+	["dirt-grey"]         = 0.25,
+	["sand-red-dark"]     = 0.15,
+	["sand-orange-dark"]  = 0.15,
+	["sand-gold-dark"]    = 0.15,
+	["sand-dull-dark"]    = 0.1,
+	["sand-grey-dark"]    = 0.1,
+	["sand-red"]          = 0.1,
+	["sand-orange"]       = 0.1,
+	["sand-gold"]         = 0.1,
+	["sand-dull"]         = 0.075,
+	["sand-grey"]         = 0.075,
+	["snow"]              = 0.25,
+	["volcanic-cool"]     = 0.1,
 }
 noxy_trees.deathselector = {
 	"dry-tree",
