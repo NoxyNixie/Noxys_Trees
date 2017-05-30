@@ -1,11 +1,13 @@
 data:extend({
 	-- Startup
 	{
-		type = "bool-setting",
-		name = "Noxys_Trees-fire-leaves-no-trees",
+		type = "double-setting",
+		name = "Noxys_Trees-tree_dying_factor",
 		setting_type = "startup",
-		default_value = false,
-		order = "a"
+		minimum_value = 0,
+		default_value = 0.98,
+		maximum_value = 1,
+		order = "b",
 	},
 	-- Global
 	{
