@@ -198,15 +198,6 @@ noxy_trees.dead = {
 	["dead-dry-hairy-tree"] = true
 }
 
-local neighbors = {
-	{-1, -1}, {-1, 0}, {-1, 1},
-	{ 0, -1},          { 0, 1},
-	{ 1, -1}, { 1, 0}, { 1, 1}}
-local directneighbors = {
-						{-1, 0},
-	{ 0, -1},          { 0, 1},
-						{ 1, 0}}
-
 local function round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
 	return math.floor(num * mult + 0.5) / mult
@@ -332,19 +323,6 @@ function process_chunk(surface, chunk)
 		local trees = get_trees_in_chunk(surface, chunk)
 		local trees_count = table.maxn(trees)
 		if trees_count >= settings.global["Noxys_Trees-maximum-trees-per-chunk"].value then
-			if settings.global["Noxys_Trees-maximum-trees-in-chunk-tries-neighboring"].value then
-				local parent = trees[global.noxy_trees.rng(1, trees_count)]
-				local v = neighbors[global.noxy_trees.rng(#neighbors)]
-				local ntrees = get_trees_in_chunk(surface, {x = chunk.x + v[1], y = chunk.y + v[2]})
-				if table.maxn(ntrees) < settings.global["Noxys_Trees-maximum-trees-in-neighboring-chunk-for-growth"].value then
-					local distance = settings.global["Noxys_Trees-expansion-distance"].value
-					local npos = {
-						nx_random((chunk.x + v[1]) * 32 + (v[1] < 0 and 32 or 0), (chunk.x + v[1]) * 32 + ((v[1] < 0 and 32 or 0) + (v[1] * distance))) + (global.noxy_trees.rng() - 0.5),
-						nx_random((chunk.y + v[2]) * 32 + (v[2] < 0 and 32 or 0), (chunk.y + v[2]) * 32 + ((v[2] < 0 and 32 or 0) + (v[2] * distance))) + (global.noxy_trees.rng() - 0.5)
-					}
-					spawn_trees(surface, parent, tilestoupdate, npos)
-				end
-			end -- settings.global["Noxys_Trees-maximum-trees-in-chunk-tries-neighboring"].value
 			if settings.global["Noxys_Trees-overpopulation-kills-trees"].value then
 				local tokill = 1 + (trees_count / settings.global["Noxys_Trees-maximum-trees-per-chunk"].value)
 				repeat
@@ -355,9 +333,7 @@ function process_chunk(surface, chunk)
 					end
 				until tokill < 1
 			end
-		elseif trees_count < 1 then
-			return
-		else
+		elseif trees_count > 0 then
 			-- Grow new trees
 			local togen = 1 + math.ceil(trees_count * settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value)
 			repeat

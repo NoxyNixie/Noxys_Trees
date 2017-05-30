@@ -87,22 +87,6 @@ data:extend({
 		order = "a-f-b",
 	},
 	{
-		type = "bool-setting",
-		name = "Noxys_Trees-maximum-trees-in-chunk-tries-neighboring",
-		setting_type = "runtime-global",
-		default_value = true,
-		order = "a-g-a"
-	},
-	{
-		type = "int-setting",
-		name = "Noxys_Trees-maximum-trees-in-neighboring-chunk-for-growth",
-		setting_type = "runtime-global",
-		minimum_value = 1,
-		default_value = 128,
-		maximum_value = 4096,
-		order = "a-g-b"
-	},
-	{
 		type = "double-setting",
 		name = "Noxys_Trees-minimum-distance-between-tree",
 		setting_type = "runtime-global",
