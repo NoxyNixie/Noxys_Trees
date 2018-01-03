@@ -145,7 +145,28 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	["wood floors_brick speed"] = true,
 }
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
-	-- Vanilla
+	-- Vanilla 0.16
+	["dirt-1"]       = 0.1,
+	["dirt-2"]       = 0.15,
+	["dirt-3"]       = 0.2,
+	["dirt-4"]       = 0.3,
+	["dirt-5"]       = 0.35,
+	["dirt-6"]       = 0.4,
+	["dirt-7"]       = 0.45,
+	["dry-dirt"]     = 0.1,
+	["grass-1"]      = 0.9,
+	["grass-2"]      = 1,
+	["grass-3"]      = 0.95,
+	["grass-4"]      = 0.75,
+	["red-desert-0"] = 0.6,
+	["red-desert-1"] = 0.3,
+	["red-desert-2"] = 0.2,
+	["red-desert-3"] = 0.1,
+	["sand-1"]       = 0.05,
+	["sand-2"]       = 0.1,
+	["sand-3"]       = 0.05,
+	["sand-4"]       = 0.15, -- Seems to not be used / defined
+	-- Vanilla 0.15
 	["grass-medium"]    = 1, -- The most fertile
 	["grass"]           = 0.9,
 	["grass-dry"]       = 0.75,
@@ -188,15 +209,20 @@ noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no
 	["volcanic-cool"]     = 0.1,
 }
 noxy_trees.deathselector = {
-	"dry-tree",
-	"dry-hairy-tree"
+	"dead-grey-trunk",
+	"dry-hairy-tree",
+	"dead-tree-desert"
 }
 noxy_trees.dead = {
-	["dry-tree"]            = "dead-grey-trunk",
+	["dry-tree"]            = true,
 	["dry-hairy-tree"]      = "dead-dry-hairy-tree",
-	["dead-grey-trunk"]     = true,
-	["dead-dry-hairy-tree"] = true
+	["dead-grey-trunk"]     = "dry-tree",
+	["dead-dry-hairy-tree"] = true,
+	["dead-tree-desert"]    = "dry-tree",
 }
+-- todo: Maybe add a way for dead trees to resurrect into lush trees when fertility is high enough and/or when they are spreading.
+
+-- noxy_trees.debug = {missingtile = {}}
 
 local function round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
@@ -243,6 +269,9 @@ script.on_event({defines.events.on_tick}, function()
 						.. "Killed: " .. global.noxy_trees.killedcount .. " (" .. round(global.noxy_trees.killedcount / timegap, 2) .. "/s)."
 						.. "Degrade: " .. global.noxy_trees.degradedcount .. " (" .. round(global.noxy_trees.degradedcount / timegap, 2) .. "/s)."
 					)
+				-- if #noxy_trees.debug.missingtile then
+				-- 	nx_debug(serpent.block(noxy_trees.debug.missingtile))
+				-- end
 				global.noxy_trees.lastdebugmessage = game.tick
 				global.noxy_trees.spawnedcount     = 0
 				global.noxy_trees.deadedcount      = 0
@@ -379,6 +408,8 @@ function process_chunk(surface, chunk)
 						local fertility = 0
 						if noxy_trees.fertility[tile.name] then
 							fertility = noxy_trees.fertility[tile.name]
+						-- else
+						-- 	noxy_trees.debug.missingtile[tile.name] = true
 						end
 						if fertility < settings.global["Noxys_Trees-deaths-by-lack-of-fertility-minimum"].value 
 							and fertility < global.noxy_trees.rng() then
@@ -466,6 +497,9 @@ function spawn_trees(surface, parent, tilestoupdate, newpos)
 				surface.create_entity{name = parent.name, position = newpos}
 				global.noxy_trees.spawnedcount = global.noxy_trees.spawnedcount + 1
 			end
+			-- if not noxy_trees.fertility[tile.name] then
+			-- 	noxy_trees.debug.missingtile[tile.name] = true
+			-- end
 		end
 	end
 	return
