@@ -93,7 +93,7 @@ data:extend({
 		name = "Noxys_Trees-minimum-distance-between-tree",
 		setting_type = "runtime-global",
 		minimum_value = 0.1,
-		default_value = 1,
+		default_value = 0.8,
 		maximum_value = 16,
 		order = "a-h-a",
 	},

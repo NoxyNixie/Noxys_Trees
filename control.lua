@@ -220,9 +220,24 @@ noxy_trees.dead = {
 	["dead-dry-hairy-tree"] = true,
 	["dead-tree-desert"]    = "dry-tree",
 }
+noxy_trees.alive = { -- No modded trees in this but this is only used for tree resurrections which should be a rare occurance on its own.
+	"tree-01",
+	"tree-01",
+	"tree-02-red",
+	"tree-03",
+	"tree-04",
+	"tree-05",
+	"tree-06",
+	"tree-06-brown",
+	"tree-07",
+	"tree-08",
+	"tree-08-brown",
+	"tree-08-red",
+	"tree-09",
+	"tree-09-brown",
+	"tree-09-red"
+}
 -- todo: Maybe add a way for dead trees to resurrect into lush trees when fertility is high enough and/or when they are spreading.
-
--- noxy_trees.debug = {missingtile = {}}
 
 local function round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
@@ -234,10 +249,12 @@ local function initglobal()
 	global.noxy_trees.chunks           = {}
 	global.noxy_trees.tick             = 0
 	global.noxy_trees.rng              = game.create_random_generator()
+	global.noxy_trees.chunkcycles      = 0
 	global.noxy_trees.spawnedcount     = 0
 	global.noxy_trees.deadedcount      = 0
 	global.noxy_trees.killedcount      = 0
 	global.noxy_trees.degradedcount    = 0
+	global.noxy_trees.resurrected      = 0
 	global.noxy_trees.lastdebugmessage = 0
 	global.noxy_trees.lasttotalchunks  = 0
 end
@@ -263,26 +280,27 @@ script.on_event({defines.events.on_tick}, function()
 		if settings.global["Noxys_Trees-debug"].value then
 			if global.noxy_trees.lastdebugmessage + settings.global["Noxys_Trees-debug-interval"].value < game.tick then
 				local timegap = (game.tick - global.noxy_trees.lastdebugmessage) / 60
-				nx_debug("Chunks: " .. #global.noxy_trees.chunks .. "/" .. global.noxy_trees.lasttotalchunks .. ". Stats: "
-						.. "Grown: " .. global.noxy_trees.spawnedcount .. " (" .. round(global.noxy_trees.spawnedcount / timegap, 2) .. "/s)."
-						.. "Deaded: " .. global.noxy_trees.deadedcount .. " (" .. round(global.noxy_trees.deadedcount / timegap, 2) .. "/s)."
-						.. "Killed: " .. global.noxy_trees.killedcount .. " (" .. round(global.noxy_trees.killedcount / timegap, 2) .. "/s)."
-						.. "Degrade: " .. global.noxy_trees.degradedcount .. " (" .. round(global.noxy_trees.degradedcount / timegap, 2) .. "/s)."
+				if not global.noxy_trees.chunkcycles then global.noxy_trees.chunkcycles = 0 end
+				nx_debug("Chunks: " .. #global.noxy_trees.chunks .. "/" .. global.noxy_trees.lasttotalchunks .. "."
+						.. " Grown: " .. global.noxy_trees.spawnedcount .. " (" .. round(global.noxy_trees.spawnedcount / timegap, 2) .. "/s)."
+						.. " Deaded: " .. global.noxy_trees.deadedcount .. " (" .. round(global.noxy_trees.deadedcount / timegap, 2) .. "/s)."
+						.. " Killed: " .. global.noxy_trees.killedcount .. " (" .. round(global.noxy_trees.killedcount / timegap, 2) .. "/s)."
+						.. " Degrade: " .. global.noxy_trees.degradedcount .. " (" .. round(global.noxy_trees.degradedcount / timegap, 2) .. "/s)."
+						.. " Rezzed: " .. global.noxy_trees.resurrected .. " (" .. round(global.noxy_trees.resurrected / timegap, 2) .. "/s)."
+						.. " Chunk Cycle: " .. global.noxy_trees.chunkcycles .. "."
 					)
-				-- if #noxy_trees.debug.missingtile then
-				-- 	nx_debug(serpent.block(noxy_trees.debug.missingtile))
-				-- end
 				global.noxy_trees.lastdebugmessage = game.tick
 				global.noxy_trees.spawnedcount     = 0
 				global.noxy_trees.deadedcount      = 0
 				global.noxy_trees.killedcount      = 0
 				global.noxy_trees.degradedcount    = 0
+				global.noxy_trees.resurrected      = 0
 			end
 		end
 		if global.noxy_trees.tick <= 0 or global.noxy_trees.tick == nil then
 			global.noxy_trees.tick = settings.global["Noxys_Trees-ticks-between-operations"].value
 			-- Do the stuff
-			local surface = game.surfaces[1] 
+			local surface = game.surfaces[1] -- Currently I do not know of any mods that add more surfaces that would warrant tree spreading so just nauvis will do.
 			if surface ~= nil then
 				local chunksdone = 0
 				local chunkstodo = settings.global["Noxys_Trees-chunks-per-operation"].value
@@ -297,7 +315,8 @@ script.on_event({defines.events.on_tick}, function()
 						for chunk in surface.get_chunks() do
 							table.insert(global.noxy_trees.chunks, chunk)
 						end
-						nx_debug("Chunk cycle completed. New cycle added " .. #global.noxy_trees.chunks .. " chunks to be processed.")
+						global.noxy_trees.chunkcycles = global.noxy_trees.chunkcycles + 1
+						-- nx_debug("Chunk cycle completed. New cycle added " .. #global.noxy_trees.chunks .. " chunks to be processed.")
 						global.noxy_trees.lasttotalchunks = #global.noxy_trees.chunks
 					end
 					if #global.noxy_trees.chunks < 1 then nx_debug("Bailing because no chunks!") break end
@@ -367,7 +386,9 @@ function process_chunk(surface, chunk)
 			local togen = 1 + math.ceil(trees_count * settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value)
 			repeat
 				local parent = trees[global.noxy_trees.rng(1, trees_count)]
-				spawn_trees(surface, parent, tilestoupdate)
+				if parent.valid then
+					spawn_trees(surface, parent, tilestoupdate)
+				end
 				togen = togen - 1
 			until togen <= 0
 		end
@@ -408,8 +429,6 @@ function process_chunk(surface, chunk)
 						local fertility = 0
 						if noxy_trees.fertility[tile.name] then
 							fertility = noxy_trees.fertility[tile.name]
-						-- else
-						-- 	noxy_trees.debug.missingtile[tile.name] = true
 						end
 						if fertility < settings.global["Noxys_Trees-deaths-by-lack-of-fertility-minimum"].value 
 							and fertility < global.noxy_trees.rng() then
@@ -469,6 +488,7 @@ function spawn_trees(surface, parent, tilestoupdate, newpos)
 				noxy_trees.fertility[tile.name] and
 				noxy_trees.fertility[tile.name] > 0 and
 				noxy_trees.fertility[tile.name] > global.noxy_trees.rng() and
+				not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
 				surface.can_place_entity{name = parent.name, position = newpos}
 			then
 				local r = settings.global["Noxys_Trees-minimum-distance-between-tree"].value / noxy_trees.fertility[tile.name]
@@ -496,10 +516,22 @@ function spawn_trees(surface, parent, tilestoupdate, newpos)
 				end
 				surface.create_entity{name = parent.name, position = newpos}
 				global.noxy_trees.spawnedcount = global.noxy_trees.spawnedcount + 1
+			elseif -- Tree resurrections
+				noxy_trees.fertility[tile.name] and
+				noxy_trees.fertility[tile.name] > 0 and
+				noxy_trees.fertility[tile.name] > global.noxy_trees.rng() and
+				noxy_trees.dead[parent.name]
+			then
+				-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
+				if surface.get_pollution{parent.position.x, parent.position.y} / settings.global["Noxys_Trees-deaths-by-pollution-bias"].value < 1 + global.noxy_trees.rng() then
+					-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
+					local newname = noxy_trees.alive[global.noxy_trees.rng(#noxy_trees.alive)]
+					local newpos = parent.position
+					parent.destroy()
+					surface.create_entity{name = newname, position = newpos}
+					global.noxy_trees.resurrected = global.noxy_trees.resurrected + 1
+				end
 			end
-			-- if not noxy_trees.fertility[tile.name] then
-			-- 	noxy_trees.debug.missingtile[tile.name] = true
-			-- end
 		end
 	end
 	return
