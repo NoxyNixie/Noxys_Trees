@@ -403,88 +403,77 @@ noxy_trees.alive = { -- No modded trees in this but this is only used for tree r
 	"tree-08-red",
 	"tree-09",
 	"tree-09-brown",
-	"tree-09-red"
+	"tree-09-red",
+	-- Alien Biomes
+	"tree-wetland-a",
+	"tree-wetland-b",
+	"tree-wetland-c",
+	"tree-wetland-d",
+	"tree-wetland-e",
+	"tree-wetland-f",
+	"tree-wetland-g",
+	"tree-wetland-h",
+	"tree-wetland-i",
+	"tree-wetland-j",
+	"tree-wetland-k",
+	"tree-wetland-l",
+	"tree-wetland-m",
+	"tree-wetland-n",
+	"tree-wetland-o",
+	"tree-grassland-a",
+	"tree-grassland-b",
+	"tree-grassland-c",
+	"tree-grassland-d",
+	"tree-grassland-e",
+	"tree-grassland-f",
+	"tree-grassland-g",
+	"tree-grassland-h",
+	"tree-grassland-h2",
+	"tree-grassland-h3",
+	"tree-grassland-i",
+	"tree-grassland-k",
+	"tree-grassland-l",
+	"tree-grassland-m",
+	"tree-grassland-n",
+	"tree-grassland-0",
+	"tree-grassland-p",
+	"tree-grassland-q",
+	"tree-dryland-a",
+	"tree-dryland-b",
+	"tree-dryland-c",
+	"tree-dryland-d",
+	"tree-dryland-e",
+	"tree-dryland-f",
+	"tree-dryland-g",
+	"tree-dryland-h",
+	"tree-dryland-i",
+	"tree-dryland-j",
+	"tree-dryland-k",
+	"tree-dryland-l",
+	"tree-dryland-m",
+	"tree-dryland-n",
+	"tree-dryland-o",
+	"tree-desert-a",
+	"tree-desert-b",
+	"tree-desert-c",
+	"tree-desert-d",
+	"tree-desert-e",
+	"tree-desert-f",
+	"tree-desert-g",
+	"tree-desert-h",
+	"tree-desert-i",
+	"tree-desert-j",
+	"tree-desert-k",
+	"tree-desert-l",
+	"tree-desert-m",
+	"tree-desert-n",
+	"tree-snow-a",
+	"tree-volcanic-a"
 }
 
 local function round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
 	return math.floor(num * mult + 0.5) / mult
-end
-
-local function check_mod_compatibilities()
-	--[[ I have no idea yet how this can be done on load
-	if game.active_mods["alien-biomes"] then
-		local trees = {
-			"tree-wetland-a",
-			"tree-wetland-b",
-			"tree-wetland-c",
-			"tree-wetland-d",
-			"tree-wetland-e",
-			"tree-wetland-f",
-			"tree-wetland-g",
-			"tree-wetland-h",
-			"tree-wetland-i",
-			"tree-wetland-j",
-			"tree-wetland-k",
-			"tree-wetland-l",
-			"tree-wetland-m",
-			"tree-wetland-n",
-			"tree-wetland-o",
-			"tree-grassland-a",
-			"tree-grassland-b",
-			"tree-grassland-c",
-			"tree-grassland-d",
-			"tree-grassland-e",
-			"tree-grassland-f",
-			"tree-grassland-g",
-			"tree-grassland-h",
-			"tree-grassland-h2",
-			"tree-grassland-h3",
-			"tree-grassland-i",
-			"tree-grassland-k",
-			"tree-grassland-l",
-			"tree-grassland-m",
-			"tree-grassland-n",
-			"tree-grassland-0",
-			"tree-grassland-p",
-			"tree-grassland-q",
-			"tree-dryland-a",
-			"tree-dryland-b",
-			"tree-dryland-c",
-			"tree-dryland-d",
-			"tree-dryland-e",
-			"tree-dryland-f",
-			"tree-dryland-g",
-			"tree-dryland-h",
-			"tree-dryland-i",
-			"tree-dryland-j",
-			"tree-dryland-k",
-			"tree-dryland-l",
-			"tree-dryland-m",
-			"tree-dryland-n",
-			"tree-dryland-o",
-			"tree-desert-a",
-			"tree-desert-b",
-			"tree-desert-c",
-			"tree-desert-d",
-			"tree-desert-e",
-			"tree-desert-f",
-			"tree-desert-g",
-			"tree-desert-h",
-			"tree-desert-i",
-			"tree-desert-j",
-			"tree-desert-k",
-			"tree-desert-l",
-			"tree-desert-m",
-			"tree-desert-n",
-			"tree-snow-a",
-			"tree-volcanic-a"
-		}
-		for _,tree in pairs(trees) do
-			table.insert(noxy_trees.alive, tree)
-		end
-	end
-	]]
 end
 
 local function cache_forces()
@@ -495,12 +484,11 @@ local function cache_forces()
 	end
 end
 
-local function initglobal()
+local function initialize()
 	global.chunks           = {}
 	global.surfaces         = {1}
 	global.last_surface     = nil
 	global.forces           = {}
-	cache_forces()
 	global.tick             = 0
 	global.rng              = game.create_random_generator()
 	global.chunkcycles      = 0
@@ -511,6 +499,8 @@ local function initglobal()
 	global.resurrected      = 0
 	global.lastdebugmessage = 0
 	global.lasttotalchunks  = 0
+
+	cache_forces()
 end
 
 local config = {}
@@ -576,7 +566,6 @@ local function deadening_tree(surface, tree)
 	end
 end
 
-
 local function spawn_trees(surface, parent, tilestoupdate, newpos)
 	if not noxy_trees.disabled[parent.name] then
 		if not newpos then
@@ -598,8 +587,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 					end
 				else
 					if
-						game.tile_prototypes[noxy_trees.degradable[tile.name]] and 
-						game.tile_prototypes[noxy_trees.degradable[tile.name]].valid
+						game.tile_prototypes[noxy_trees.degradable[tile.name]]
 					then
 						table.insert(tilestoupdate, {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position})
 					else
@@ -607,10 +595,9 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 					end
 				end
 			elseif -- Tree spreading
-				noxy_trees.fertility[tile.name] and
-				noxy_trees.fertility[tile.name] > 0 and
-				noxy_trees.fertility[tile.name] > global.rng() and
+				(noxy_trees.fertility[tile.name] or 0) > 0 and
 				not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
+				noxy_trees.fertility[tile.name] > global.rng() and
 				surface.can_place_entity{name = parent.name, position = newpos}
 			then
 				local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
@@ -639,15 +626,14 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 				surface.create_entity{name = parent.name, position = newpos}
 				global.spawnedcount = global.spawnedcount + 1
 			elseif -- Tree resurrections
-				noxy_trees.fertility[tile.name] and
-				noxy_trees.fertility[tile.name] > 0 and
-				noxy_trees.fertility[tile.name] > global.rng() and
-				noxy_trees.dead[parent.name]
+				(noxy_trees.fertility[tile.name] or 0) > 0 and
+				noxy_trees.dead[parent.name] and
+				noxy_trees.fertility[tile.name] > global.rng()
 			then
 				-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
 				if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
 					-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
-					local newname = noxy_trees.alive[global.rng(#noxy_trees.alive)]
+					local newname = noxy_trees.combined[global.rng(#noxy_trees.combined)]
 					local newpos = parent.position
 					parent.destroy()
 					surface.create_entity{name = newname, position = newpos}
@@ -755,29 +741,34 @@ script.on_configuration_changed(function()
 		end
 		global.noxy_trees = nil
 	end
-	if not global.forces then initglobal() end
-	-- check_mod_compatibilities()
+	initialize()
 end)
 
-script.on_load(function()
-	check_mod_compatibilities()
-end)
-
-script.on_init(function()
-	if not global.forces then initglobal() end
+script.on_init(function ()
+	initialize()
 end)
 
 script.on_event({defines.events.on_runtime_mod_setting_changed}, cache_settings)
 
 script.on_event({defines.events.on_forces_merging, defines.events.on_player_changed_force}, cache_forces)
 
-script.on_event({defines.events.on_tick}, function()
+script.on_event({defines.events.on_tick}, function(event)
 	local global = global
 	if config.enabled then
 		global.tick = global.tick - 1
+		-- Check alive trees this should only run once
+		if not noxy_trees.combined then
+			noxy_trees.combined = {}
+			for _, tree in pairs(noxy_trees.alive) do
+				if game.entity_prototypes[tree] then
+					table.insert(noxy_trees.combined, tree)
+				end
+			end
+		end		
+		-- Debug
 		if config.debug then
-			if global.lastdebugmessage + config.debug_interval < game.tick then
-				local timegap = (game.tick - global.lastdebugmessage) / 60
+			if global.lastdebugmessage + config.debug_interval < event.tick then
+				local timegap = (event.tick - global.lastdebugmessage) / 60
 				if not global.chunkcycles then global.chunkcycles = 0 end
 				nx_debug("Chunks: " .. #global.chunks .. "/" .. global.lasttotalchunks .. "."
 						.. " Grown: " .. global.spawnedcount .. " (" .. round(global.spawnedcount / timegap, 2) .. "/s)."
@@ -787,7 +778,7 @@ script.on_event({defines.events.on_tick}, function()
 						.. " Rezzed: " .. global.resurrected .. " (" .. round(global.resurrected / timegap, 2) .. "/s)."
 						.. " Chunk Cycle: " .. global.chunkcycles .. "."
 					)
-				global.lastdebugmessage = game.tick
+				global.lastdebugmessage = event.tick
 				global.spawnedcount     = 0
 				global.deadedcount      = 0
 				global.killedcount      = 0
