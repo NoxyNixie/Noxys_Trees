@@ -405,18 +405,100 @@ noxy_trees.alive = { -- No modded trees in this but this is only used for tree r
 	"tree-09-brown",
 	"tree-09-red"
 }
-if game.active_mods["alien-biomes"] then
-	--todo: add trees to the alive list.
-end
 
 local function round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
 	return math.floor(num * mult + 0.5) / mult
 end
 
+local function check_mod_compatibilities()
+	--[[ I have no idea yet how this can be done on load
+	if game.active_mods["alien-biomes"] then
+		local trees = {
+			"tree-wetland-a",
+			"tree-wetland-b",
+			"tree-wetland-c",
+			"tree-wetland-d",
+			"tree-wetland-e",
+			"tree-wetland-f",
+			"tree-wetland-g",
+			"tree-wetland-h",
+			"tree-wetland-i",
+			"tree-wetland-j",
+			"tree-wetland-k",
+			"tree-wetland-l",
+			"tree-wetland-m",
+			"tree-wetland-n",
+			"tree-wetland-o",
+			"tree-grassland-a",
+			"tree-grassland-b",
+			"tree-grassland-c",
+			"tree-grassland-d",
+			"tree-grassland-e",
+			"tree-grassland-f",
+			"tree-grassland-g",
+			"tree-grassland-h",
+			"tree-grassland-h2",
+			"tree-grassland-h3",
+			"tree-grassland-i",
+			"tree-grassland-k",
+			"tree-grassland-l",
+			"tree-grassland-m",
+			"tree-grassland-n",
+			"tree-grassland-0",
+			"tree-grassland-p",
+			"tree-grassland-q",
+			"tree-dryland-a",
+			"tree-dryland-b",
+			"tree-dryland-c",
+			"tree-dryland-d",
+			"tree-dryland-e",
+			"tree-dryland-f",
+			"tree-dryland-g",
+			"tree-dryland-h",
+			"tree-dryland-i",
+			"tree-dryland-j",
+			"tree-dryland-k",
+			"tree-dryland-l",
+			"tree-dryland-m",
+			"tree-dryland-n",
+			"tree-dryland-o",
+			"tree-desert-a",
+			"tree-desert-b",
+			"tree-desert-c",
+			"tree-desert-d",
+			"tree-desert-e",
+			"tree-desert-f",
+			"tree-desert-g",
+			"tree-desert-h",
+			"tree-desert-i",
+			"tree-desert-j",
+			"tree-desert-k",
+			"tree-desert-l",
+			"tree-desert-m",
+			"tree-desert-n",
+			"tree-snow-a",
+			"tree-volcanic-a"
+		}
+		for _,tree in pairs(trees) do
+			table.insert(noxy_trees.alive, tree)
+		end
+	end
+	]]
+end
+
+local function cache_forces()
+	for _, force in pairs(game.forces) do
+		if #force.players > 0 then
+			table.insert(global.forces, force.name)
+		end
+	end
+end
+
 local function initglobal()
 	global.chunks           = {}
 	global.surfaces         = {1}
+	global.last_surface     = nil
 	global.forces           = {}
 	cache_forces()
 	global.tick             = 0
@@ -431,36 +513,28 @@ local function initglobal()
 	global.lasttotalchunks  = 0
 end
 
-local function cache_forces()
-	for _, force in pairs(game.forces) do
-		if #force.players > 0 then
-			table.insert(global.forces, force.name)
-		end
-	end
-end
-
 local config = {}
 
 local function cache_settings()
-	config.enabled = settings.global["Noxys_Trees-enabled"].value
-	config.debug = settings.global["Noxys_Trees-debug"].value
-	config.debug_interval = settings.global["Noxys_Trees-debug-interval"].value
-	config.degrade_tiles = settings.global["Noxys_Trees-degrade-tiles"].value
-	config.overpopulation_kills_trees = settings.global["Noxys_Trees-overpopulation-kills-trees"].value
-	config.kill_trees_near_unwanted = settings.global["Noxys_Trees-kill-trees-near-unwanted"].value
-	config.ticks_between_operations = settings.global["Noxys_Trees-ticks-between-operations"].value
-	config.chunks_per_operation = settings.global["Noxys_Trees-chunks-per-operation"].value
+	config.enabled                             = settings.global["Noxys_Trees-enabled"].value
+	config.debug                               = settings.global["Noxys_Trees-debug"].value
+	config.debug_interval                      = settings.global["Noxys_Trees-debug-interval"].value
+	config.degrade_tiles                       = settings.global["Noxys_Trees-degrade-tiles"].value
+	config.overpopulation_kills_trees          = settings.global["Noxys_Trees-overpopulation-kills-trees"].value
+	config.kill_trees_near_unwanted            = settings.global["Noxys_Trees-kill-trees-near-unwanted"].value
+	config.ticks_between_operations            = settings.global["Noxys_Trees-ticks-between-operations"].value
+	config.chunks_per_operation                = settings.global["Noxys_Trees-chunks-per-operation"].value
 	config.chunks_per_operation_enable_scaling = settings.global["Noxys_Trees-chunks-per-operation-enable-scaling"].value
-	config.chunks_per_operation_scaling_bias = settings.global["Noxys_Trees-chunks-per-operation-scaling-bias"].value
-	config.minimum_distance_between_tree = settings.global["Noxys_Trees-minimum-distance-between-tree"].value
-	config.minimum_distance_to_enemies = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
-	config.minimum_distance_to_uranium = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
+	config.chunks_per_operation_scaling_bias   = settings.global["Noxys_Trees-chunks-per-operation-scaling-bias"].value
+	config.minimum_distance_between_tree       = settings.global["Noxys_Trees-minimum-distance-between-tree"].value
+	config.minimum_distance_to_enemies         = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
+	config.minimum_distance_to_uranium         = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
 	config.minimum_distance_to_player_entities = settings.global["Noxys_Trees-minimum-distance-to-player-entities"].value
 	config.deaths_by_lack_of_fertility_minimum = settings.global["Noxys_Trees-deaths-by-lack-of-fertility-minimum"].value
-	config.deaths_by_pollution_bias = settings.global["Noxys_Trees-deaths-by-pollution-bias"].value
-	config.trees_to_grow_per_chunk_percentage = settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value
-	config.maximum_trees_per_chunk = settings.global["Noxys_Trees-maximum-trees-per-chunk"].value
-	config.expansion_distance = settings.global["Noxys_Trees-expansion-distance"].value
+	config.deaths_by_pollution_bias            = settings.global["Noxys_Trees-deaths-by-pollution-bias"].value
+	config.trees_to_grow_per_chunk_percentage  = settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value
+	config.maximum_trees_per_chunk             = settings.global["Noxys_Trees-maximum-trees-per-chunk"].value
+	config.expansion_distance                  = settings.global["Noxys_Trees-expansion-distance"].value
 end
 
 cache_settings()
@@ -470,85 +544,6 @@ local function nx_debug(message)
 		game.print("NX Debug: " .. message)
 	end
 end
-
-script.on_configuration_changed(function()
-	if global.noxy_trees then
-		for k,v in pairs(global.noxy_trees) do
-			global[k] = v
-		end
-		global.noxy_trees = nil
-	end
-	if not global.forces then initglobal() end
-end)
-
-script.on_init(function()
-	if not global.forces then initglobal() end
-end)
-
-script.on_event({defines.events.on_runtime_mod_setting_changed}, cache_settings)
-
-script.on_event({defines.events.on_forces_merging, defines.events.on_player_changed_force}, cache_forces)
-
-script.on_event({defines.events.on_tick}, function()
-	local global = global
-	if config.enabled then
-		global.tick = global.tick - 1
-		if config.debug then
-			if global.lastdebugmessage + config.debug_interval < game.tick then
-				local timegap = (game.tick - global.lastdebugmessage) / 60
-				if not global.chunkcycles then global.chunkcycles = 0 end
-				nx_debug("Chunks: " .. #global.chunks .. "/" .. global.lasttotalchunks .. "."
-						.. " Grown: " .. global.spawnedcount .. " (" .. round(global.spawnedcount / timegap, 2) .. "/s)."
-						.. " Deaded: " .. global.deadedcount .. " (" .. round(global.deadedcount / timegap, 2) .. "/s)."
-						.. " Killed: " .. global.killedcount .. " (" .. round(global.killedcount / timegap, 2) .. "/s)."
-						.. " Degrade: " .. global.degradedcount .. " (" .. round(global.degradedcount / timegap, 2) .. "/s)."
-						.. " Rezzed: " .. global.resurrected .. " (" .. round(global.resurrected / timegap, 2) .. "/s)."
-						.. " Chunk Cycle: " .. global.chunkcycles .. "."
-					)
-				global.lastdebugmessage = game.tick
-				global.spawnedcount     = 0
-				global.deadedcount      = 0
-				global.killedcount      = 0
-				global.degradedcount    = 0
-				global.resurrected      = 0
-			end
-		end
-		if global.tick <= 0 or global.tick == nil then
-			global.tick = config.ticks_between_operations
-			-- Do the stuff
-			local surface = game.surfaces[1] -- Currently I do not know of any mods that add more surfaces that would warrant tree spreading so just nauvis will do.
-			if surface ~= nil then
-				local chunksdone = 0
-				local chunkstodo = config.chunks_per_operation
-				if config.chunks_per_operation_enable_scaling then
-					chunkstodo = math.floor(chunkstodo * (global.lasttotalchunks / config.chunks_per_operation_scaling_bias))
-				end
-				if chunkstodo < 1 then chunkstodo = 1 end
-				repeat
-					if #global.chunks < 1 then
-						-- populate our chunk array
-						local chunks = {}
-						for chunk in surface.get_chunks() do
-							table.insert(global.chunks, chunk)
-						end
-						global.chunkcycles = global.chunkcycles + 1
-						-- nx_debug("Chunk cycle completed. New cycle added " .. #global.chunks .. " chunks to be processed.")
-						global.lasttotalchunks = #global.chunks
-					end
-					if #global.chunks < 1 then nx_debug("Bailing because no chunks!") break end
-					-- Select a chunk
-					local chunk_index = global.rng(1, #global.chunks)
-					process_chunk(surface, table.remove(global.chunks, chunk_index))
-					-- Done
-					chunksdone = chunksdone + 1
-				until chunksdone >= chunkstodo
-			end
-		end
-		if global.tick > config.ticks_between_operations then
-			global.tick = config.ticks_between_operations
-		end
-	end
-end)
 
 local function get_trees_in_chunk(surface, chunk)
 	return surface.find_entities_filtered{area = {{ chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}, type = "tree"}
@@ -578,6 +573,88 @@ local function deadening_tree(surface, tree)
 		surface.create_entity{name = deadtree, position = tree.position}
 		tree.die()
 		global.deadedcount = global.deadedcount + 1
+	end
+end
+
+
+local function spawn_trees(surface, parent, tilestoupdate, newpos)
+	if not noxy_trees.disabled[parent.name] then
+		if not newpos then
+			local distance = config.expansion_distance
+			newpos = {
+				parent.position.x + global.rng(distance * 2) - distance + (global.rng() - 0.5),
+				parent.position.y + global.rng(distance * 2) - distance + (global.rng() - 0.5),
+			}
+		end
+		local tile = surface.get_tile(newpos[1], newpos[2])
+		if tile and tile.valid == true then
+			-- Tile degradation
+			if config.degrade_tiles and noxy_trees.degradable[tile.name] then
+				if noxy_trees.degradable[tile.name] == true then
+					if tile.hidden_tile then
+						table.insert(tilestoupdate, {["name"] = tile.hidden_tile, ["position"] = tile.position})
+					else
+						nx_debug("ERROR: Can't degrade tile because no hidden_tile: " .. tile.name)
+					end
+				else
+					if
+						game.tile_prototypes[noxy_trees.degradable[tile.name]] and 
+						game.tile_prototypes[noxy_trees.degradable[tile.name]].valid
+					then
+						table.insert(tilestoupdate, {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position})
+					else
+						nx_debug("ERROR: Invalid tile?: " .. noxy_trees.degradable[tile.name] .. " Tried to convert from: " .. tile.name)
+					end
+				end
+			elseif -- Tree spreading
+				noxy_trees.fertility[tile.name] and
+				noxy_trees.fertility[tile.name] > 0 and
+				noxy_trees.fertility[tile.name] > global.rng() and
+				not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
+				surface.can_place_entity{name = parent.name, position = newpos}
+			then
+				local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
+				if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 0 then
+					return
+				end
+				local rp = config.minimum_distance_to_player_entities
+				if rp > 0 then
+					for _, force in pairs(game.forces) do
+						if #force.players > 0 then
+							if surface.count_entities_filtered{area = {{newpos[1] - rp, newpos[2] - rp}, {newpos[1] + rp, newpos[2] + rp}}, force = force} > 0 then
+								return
+							end
+						end
+					end
+				end
+				local er = config.minimum_distance_to_enemies
+				if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 0 or
+					surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 0 then
+					return
+				end
+				local ur = config.minimum_distance_to_uranium
+				if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+					return
+				end
+				surface.create_entity{name = parent.name, position = newpos}
+				global.spawnedcount = global.spawnedcount + 1
+			elseif -- Tree resurrections
+				noxy_trees.fertility[tile.name] and
+				noxy_trees.fertility[tile.name] > 0 and
+				noxy_trees.fertility[tile.name] > global.rng() and
+				noxy_trees.dead[parent.name]
+			then
+				-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
+				if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
+					-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
+					local newname = noxy_trees.alive[global.rng(#noxy_trees.alive)]
+					local newpos = parent.position
+					parent.destroy()
+					surface.create_entity{name = newname, position = newpos}
+					global.resurrected = global.resurrected + 1
+				end
+			end
+		end
 	end
 end
 
@@ -671,83 +748,90 @@ local function process_chunk(surface, chunk)
 	end
 end
 
-local function spawn_trees(surface, parent, tilestoupdate, newpos)
-	if not noxy_trees.disabled[parent.name] then
-		if not newpos then
-			local distance = config.expansion_distance
-			newpos = {
-				parent.position.x + global.rng(distance * 2) - distance + (global.rng() - 0.5),
-				parent.position.y + global.rng(distance * 2) - distance + (global.rng() - 0.5),
-			}
+script.on_configuration_changed(function()
+	if global.noxy_trees then
+		for k,v in pairs(global.noxy_trees) do
+			global[k] = v
 		end
-		local tile = surface.get_tile(newpos[1], newpos[2])
-		if tile and tile.valid == true then
-			-- Tile degradation
-			if config.degrade_tiles and noxy_trees.degradable[tile.name] then
-				if noxy_trees.degradable[tile.name] == true then
-					if tile.hidden_tile then
-						table.insert(tilestoupdate, {["name"] = tile.hidden_tile, ["position"] = tile.position})
-					else
-						nx_debug("ERROR: Can't degrade tile because no hidden_tile: " .. tile.name)
-					end
-				else
-					if
-						game.tile_prototypes[noxy_trees.degradable[tile.name]] and 
-						game.tile_prototypes[noxy_trees.degradable[tile.name]].valid
-					then
-						table.insert(tilestoupdate, {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position})
-					else
-						nx_debug("ERROR: Invalid tile?: " .. noxy_trees.degradable[tile.name] .. " Tried to convert from: " .. tile.name)
-					end
-				end
-			elseif -- Tree spreading
-				noxy_trees.fertility[tile.name] and
-				noxy_trees.fertility[tile.name] > 0 and
-				noxy_trees.fertility[tile.name] > global.rng() and
-				not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
-				surface.can_place_entity{name = parent.name, position = newpos}
-			then
-				local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
-				if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 0 then
-					return
-				end
-				local rp = config.minimum_distance_to_player_entities
-				if rp > 0 then
-					for _, force in pairs(game.forces) do
-						if #force.players > 0 then
-							if surface.count_entities_filtered{area = {{newpos[1] - rp, newpos[2] - rp}, {newpos[1] + rp, newpos[2] + rp}}, force = force} > 0 then
-								return
-							end
-						end
-					end
-				end
-				local er = config.minimum_distance_to_enemies
-				if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 0 or
-					surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 0 then
-					return
-				end
-				local ur = config.minimum_distance_to_uranium
-				if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 0 then
-					return
-				end
-				surface.create_entity{name = parent.name, position = newpos}
-				global.spawnedcount = global.spawnedcount + 1
-			elseif -- Tree resurrections
-				noxy_trees.fertility[tile.name] and
-				noxy_trees.fertility[tile.name] > 0 and
-				noxy_trees.fertility[tile.name] > global.rng() and
-				noxy_trees.dead[parent.name]
-			then
-				-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
-				if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
-					-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
-					local newname = noxy_trees.alive[global.rng(#noxy_trees.alive)]
-					local newpos = parent.position
-					parent.destroy()
-					surface.create_entity{name = newname, position = newpos}
-					global.resurrected = global.resurrected + 1
-				end
+		global.noxy_trees = nil
+	end
+	if not global.forces then initglobal() end
+	-- check_mod_compatibilities()
+end)
+
+script.on_load(function()
+	check_mod_compatibilities()
+end)
+
+script.on_init(function()
+	if not global.forces then initglobal() end
+end)
+
+script.on_event({defines.events.on_runtime_mod_setting_changed}, cache_settings)
+
+script.on_event({defines.events.on_forces_merging, defines.events.on_player_changed_force}, cache_forces)
+
+script.on_event({defines.events.on_tick}, function()
+	local global = global
+	if config.enabled then
+		global.tick = global.tick - 1
+		if config.debug then
+			if global.lastdebugmessage + config.debug_interval < game.tick then
+				local timegap = (game.tick - global.lastdebugmessage) / 60
+				if not global.chunkcycles then global.chunkcycles = 0 end
+				nx_debug("Chunks: " .. #global.chunks .. "/" .. global.lasttotalchunks .. "."
+						.. " Grown: " .. global.spawnedcount .. " (" .. round(global.spawnedcount / timegap, 2) .. "/s)."
+						.. " Deaded: " .. global.deadedcount .. " (" .. round(global.deadedcount / timegap, 2) .. "/s)."
+						.. " Killed: " .. global.killedcount .. " (" .. round(global.killedcount / timegap, 2) .. "/s)."
+						.. " Degrade: " .. global.degradedcount .. " (" .. round(global.degradedcount / timegap, 2) .. "/s)."
+						.. " Rezzed: " .. global.resurrected .. " (" .. round(global.resurrected / timegap, 2) .. "/s)."
+						.. " Chunk Cycle: " .. global.chunkcycles .. "."
+					)
+				global.lastdebugmessage = game.tick
+				global.spawnedcount     = 0
+				global.deadedcount      = 0
+				global.killedcount      = 0
+				global.degradedcount    = 0
+				global.resurrected      = 0
 			end
 		end
+		if global.tick <= 0 or global.tick == nil then
+			global.tick = config.ticks_between_operations
+			-- Do the stuff
+			local last_surface, surface_index = next(global.surfaces, global.last_surface) -- Currently I do not know of any mods that add more surfaces that would warrant tree spreading so just nauvis will do.
+			if surface_index then
+				local surface = game.surfaces[surface_index]
+				if surface and surface.valid then
+					local chunksdone = 0
+					local chunkstodo = config.chunks_per_operation
+					if config.chunks_per_operation_enable_scaling then
+						chunkstodo = math.floor(chunkstodo * (global.lasttotalchunks / config.chunks_per_operation_scaling_bias))
+					end
+					if chunkstodo < 1 then chunkstodo = 1 end
+					repeat
+						if #global.chunks < 1 then
+							-- populate our chunk array
+							local chunks = {}
+							for chunk in surface.get_chunks() do
+								table.insert(global.chunks, chunk)
+							end
+							global.chunkcycles = global.chunkcycles + 1
+							-- nx_debug("Chunk cycle completed. New cycle added " .. #global.chunks .. " chunks to be processed.")
+							global.lasttotalchunks = #global.chunks
+						end
+						if #global.chunks < 1 then nx_debug("Bailing because no chunks!") break end
+						-- Select a chunk
+						local chunk_index = global.rng(1, #global.chunks)
+						process_chunk(surface, table.remove(global.chunks, chunk_index))
+						-- Done
+						chunksdone = chunksdone + 1
+					until chunksdone >= chunkstodo
+				end
+			end
+			global.last_surface = last_surface
+		end
+		if global.tick > config.ticks_between_operations then
+			global.tick = config.ticks_between_operations
+		end
 	end
-end
+end)
