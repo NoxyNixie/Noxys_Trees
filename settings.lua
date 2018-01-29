@@ -27,7 +27,7 @@ data:extend({
 	{
 		type = "int-setting",
 		name = "Noxys_Trees-debug-interval",
-		setting_type = "runtime-global", 
+		setting_type = "runtime-global",
 		minimum_value = 1,
 		default_value = 300,
 		maximum_value = 3600,
@@ -57,7 +57,7 @@ data:extend({
 	{
 		type = "int-setting",
 		name = "Noxys_Trees-ticks-between-operations",
-		setting_type = "runtime-global", 
+		setting_type = "runtime-global",
 		minimum_value = 1,
 		default_value = 60,
 		maximum_value = 3600,
@@ -170,5 +170,4 @@ data:extend({
 		order = "a-k",
 	},
 	-- Per user
-	
 })

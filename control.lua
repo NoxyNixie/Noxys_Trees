@@ -1,5 +1,9 @@
 local noxy_trees = {}
 
+local mathfloor = math.floor
+local mathceil = math.ceil
+local tableinsert = table.insert
+
 noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["dead-dry-hairy-tree"] = true,
 	["dead-grey-trunk"]     = true,
@@ -39,10 +43,8 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	["arrow-grate-down"]           = "concrete",
 	["arrow-grate-left"]           = "concrete",
 	["asphalt"]                    = "concrete",
-	["cobblestone"]                = true,
 	["checkerboard"]               = "stone-path",
 	["circuit-floor"]              = "concrete",
-	["mf-concrete-black"]          = "concrete",
 	["mf-concrete-blue"]           = "concrete",
 	["mf-concrete-darkgrey"]       = "concrete",
 	["mf-concrete-gold"]           = "concrete",
@@ -183,7 +185,7 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	["dect-paint-operations-right"] = "stone-path",
 	["dect-paint-safety-left"]      = "stone-path",
 	["dect-paint-safety-right"]     = "stone-path",
- 	-- Other mods
+	-- Other mods
 	["wood floors_brick speed"] = true,
 }
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
@@ -504,19 +506,20 @@ noxy_trees.alive = {
 
 local function round(num, numDecimalPlaces)
 	local mult = 10^(numDecimalPlaces or 0)
-	return math.floor(num * mult + 0.5) / mult
+	return mathfloor(num * mult + 0.5) / mult
 end
 
 local function cache_forces()
 	for _, force in pairs(game.forces) do
 		if #force.players > 0 then
-			table.insert(global.forces, force.name)
+			tableinsert(global.forces, force.name)
 		end
 	end
 end
 
 local function initialize()
 	global.chunks           = {}
+	global.chunkindex       = 0
 	global.surfaces         = {1}
 	global.last_surface     = nil
 	global.forces           = {}
@@ -570,15 +573,6 @@ local function get_trees_in_chunk(surface, chunk)
 	return surface.find_entities_filtered{area = {{ chunk.x * 32, chunk.y * 32}, {chunk.x * 32 + 32, chunk.y * 32 + 32}}, type = "tree"}
 end
 
-local function nx_random(a, b)
-	if a == b then return a end
-	if a > b then
-		return global.rng(b, a)
-	else
-		return global.rng(a, b)
-	end
-end
-
 local function deadening_tree(surface, tree)
 	if noxy_trees.dead[tree.name] then
 		if noxy_trees.dead[tree.name] == true then
@@ -612,7 +606,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 			if config.degrade_tiles and noxy_trees.degradable[tile.name] then
 				if noxy_trees.degradable[tile.name] == true then
 					if tile.hidden_tile then
-						table.insert(tilestoupdate, {["name"] = tile.hidden_tile, ["position"] = tile.position})
+						tableinsert(tilestoupdate, {["name"] = tile.hidden_tile, ["position"] = tile.position})
 					else
 						nx_debug("ERROR: Can't degrade tile because no hidden_tile: " .. tile.name)
 					end
@@ -620,7 +614,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 					if
 						game.tile_prototypes[noxy_trees.degradable[tile.name]]
 					then
-						table.insert(tilestoupdate, {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position})
+						tableinsert(tilestoupdate, {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position})
 					else
 						nx_debug("ERROR: Invalid tile?: " .. noxy_trees.degradable[tile.name] .. " Tried to convert from: " .. tile.name)
 					end
@@ -665,7 +659,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 				if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
 					-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
 					local newname = noxy_trees.combined[global.rng(#noxy_trees.combined)]
-					local newpos = parent.position
+					newpos = parent.position
 					parent.destroy()
 					surface.create_entity{name = newname, position = newpos}
 					global.resurrected = global.resurrected + 1
@@ -679,7 +673,7 @@ local function process_chunk(surface, chunk)
 	if chunk ~= nil then
 		local tilestoupdate = {}
 		local trees = get_trees_in_chunk(surface, chunk)
-		local trees_count = table.maxn(trees)
+		local trees_count = #trees
 		if trees_count >= config.maximum_trees_per_chunk then
 			if config.overpopulation_kills_trees then
 				local tokill = 1 + (trees_count / config.maximum_trees_per_chunk)
@@ -693,7 +687,7 @@ local function process_chunk(surface, chunk)
 			end
 		elseif trees_count > 0 then
 			-- Grow new trees
-			local togen = 1 + math.ceil(trees_count * config.trees_to_grow_per_chunk_percentage)
+			local togen = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
 			repeat
 				local parent = trees[global.rng(1, trees_count)]
 				if parent.valid then
@@ -705,9 +699,9 @@ local function process_chunk(surface, chunk)
 		if trees_count < 1 then return end
 		-- Check random trees for things that would kill them nearby (enemies / uranium / players / fertility)
 		if config.kill_trees_near_unwanted then
-			local tokill = 1 + math.ceil(trees_count * config.trees_to_grow_per_chunk_percentage)
+			local tokill = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
 			if config.deaths_by_pollution_bias > 0 then
-				tokill = tokill + math.ceil(surface.get_pollution{chunk.x * 32 + 16, chunk.y * 32 + 16} / config.deaths_by_pollution_bias)
+				tokill = tokill + mathceil(surface.get_pollution{chunk.x * 32 + 16, chunk.y * 32 + 16} / config.deaths_by_pollution_bias)
 			end
 			repeat
 				local treetocheck = trees[global.rng(1, trees_count)]
@@ -740,7 +734,7 @@ local function process_chunk(surface, chunk)
 						if noxy_trees.fertility[tile.name] then
 							fertility = noxy_trees.fertility[tile.name]
 						end
-						if fertility < config.deaths_by_lack_of_fertility_minimum 
+						if fertility < config.deaths_by_lack_of_fertility_minimum
 							and fertility < global.rng() then
 							if trees_count / config.maximum_trees_per_chunk > global.rng() then
 								deadening_tree(surface, treetocheck)
@@ -792,10 +786,10 @@ script.on_event({defines.events.on_tick}, function(event)
 			noxy_trees.combined = {}
 			for _, tree in pairs(noxy_trees.alive) do
 				if game.entity_prototypes[tree] then
-					table.insert(noxy_trees.combined, tree)
+					tableinsert(noxy_trees.combined, tree)
 				end
 			end
-		end		
+		end
 		-- Debug
 		if config.debug then
 			if global.lastdebugmessage + config.debug_interval < event.tick then
@@ -827,15 +821,14 @@ script.on_event({defines.events.on_tick}, function(event)
 					local chunksdone = 0
 					local chunkstodo = config.chunks_per_operation
 					if config.chunks_per_operation_enable_scaling then
-						chunkstodo = math.floor(chunkstodo * (global.lasttotalchunks / config.chunks_per_operation_scaling_bias))
+						chunkstodo = mathfloor(chunkstodo * (global.lasttotalchunks / config.chunks_per_operation_scaling_bias))
 					end
 					if chunkstodo < 1 then chunkstodo = 1 end
 					repeat
 						if #global.chunks < 1 then
 							-- populate our chunk array
-							local chunks = {}
 							for chunk in surface.get_chunks() do
-								table.insert(global.chunks, chunk)
+								tableinsert(global.chunks, chunk)
 							end
 							global.chunkcycles = global.chunkcycles + 1
 							-- nx_debug("Chunk cycle completed. New cycle added " .. #global.chunks .. " chunks to be processed.")
@@ -843,8 +836,13 @@ script.on_event({defines.events.on_tick}, function(event)
 						end
 						if #global.chunks < 1 then nx_debug("Bailing because no chunks!") break end
 						-- Select a chunk
-						local chunk_index = global.rng(1, #global.chunks)
-						process_chunk(surface, table.remove(global.chunks, chunk_index))
+						global.chunkindex = global.chunkindex + 1
+						if global.chunkindex > #global.chunks then
+							global.chunkindex = 0
+							global.chunks = {}
+							break
+						end
+						process_chunk(surface, global.chunks[global.chunkindex])
 						-- Done
 						chunksdone = chunksdone + 1
 					until chunksdone >= chunkstodo
