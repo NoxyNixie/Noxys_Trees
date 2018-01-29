@@ -670,92 +670,91 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 end
 
 local function process_chunk(surface, chunk)
-	if chunk ~= nil then
-		local tilestoupdate = {}
-		local trees = get_trees_in_chunk(surface, chunk)
-		local trees_count = #trees
-		if trees_count >= config.maximum_trees_per_chunk then
-			if config.overpopulation_kills_trees then
-				local tokill = 1 + (trees_count / config.maximum_trees_per_chunk)
-				repeat
-					local tree = trees[global.rng(1, trees_count)]
-					if tree and tree.valid == true then
-						deadening_tree(surface, tree)
-						tokill = tokill - 1
-					end
-				until tokill < 1
-			end
-		elseif trees_count > 0 then
-			-- Grow new trees
-			local togen = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
+	if not chunk then return end
+	local tilestoupdate = {}
+	local trees = get_trees_in_chunk(surface, chunk)
+	local trees_count = #trees
+	if trees_count >= config.maximum_trees_per_chunk then
+		if config.overpopulation_kills_trees then
+			local tokill = 1 + (trees_count / config.maximum_trees_per_chunk)
 			repeat
-				local parent = trees[global.rng(1, trees_count)]
-				if parent.valid then
-					spawn_trees(surface, parent, tilestoupdate)
+				local tree = trees[global.rng(1, trees_count)]
+				if tree and tree.valid == true then
+					deadening_tree(surface, tree)
+					tokill = tokill - 1
 				end
-				togen = togen - 1
-			until togen <= 0
+			until tokill < 1
 		end
-		if trees_count < 1 then return end
-		-- Check random trees for things that would kill them nearby (enemies / uranium / players / fertility)
-		if config.kill_trees_near_unwanted then
-			local tokill = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
-			if config.deaths_by_pollution_bias > 0 then
-				tokill = tokill + mathceil(surface.get_pollution{chunk.x * 32 + 16, chunk.y * 32 + 16} / config.deaths_by_pollution_bias)
+	elseif trees_count > 0 then
+		-- Grow new trees
+		local togen = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
+		repeat
+			local parent = trees[global.rng(1, trees_count)]
+			if parent.valid then
+				spawn_trees(surface, parent, tilestoupdate)
 			end
-			repeat
-				local treetocheck = trees[global.rng(1, trees_count)]
-				if treetocheck and treetocheck.valid == true then
-					local er = config.minimum_distance_to_enemies
-					local ur = config.minimum_distance_to_uranium
-					if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
-						surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
-						deadening_tree(surface, treetocheck)
-					elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
-						deadening_tree(surface, treetocheck)
-					else
-						local rp = config.minimum_distance_to_player_entities
-						if rp > 0 then
-							for _, force in pairs(game.forces) do
-								if #force.players > 0 then
-									if surface.count_entities_filtered{area = {{treetocheck.position.x - rp, treetocheck.position.y - rp}, {treetocheck.position.x + rp, treetocheck.position.y + rp}}, force = force} > 0 then
-										deadening_tree(surface, treetocheck)
-										break
-									end
+			togen = togen - 1
+		until togen <= 0
+	end
+	if trees_count < 1 then return end
+	-- Check random trees for things that would kill them nearby (enemies / uranium / players / fertility)
+	if config.kill_trees_near_unwanted then
+		local tokill = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
+		if config.deaths_by_pollution_bias > 0 then
+			tokill = tokill + mathceil(surface.get_pollution{chunk.x * 32 + 16, chunk.y * 32 + 16} / config.deaths_by_pollution_bias)
+		end
+		repeat
+			local treetocheck = trees[global.rng(1, trees_count)]
+			if treetocheck and treetocheck.valid == true then
+				local er = config.minimum_distance_to_enemies
+				local ur = config.minimum_distance_to_uranium
+				if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
+					surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
+					deadening_tree(surface, treetocheck)
+				elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+					deadening_tree(surface, treetocheck)
+				else
+					local rp = config.minimum_distance_to_player_entities
+					if rp > 0 then
+						for _, force in pairs(game.forces) do
+							if #force.players > 0 then
+								if surface.count_entities_filtered{area = {{treetocheck.position.x - rp, treetocheck.position.y - rp}, {treetocheck.position.x + rp, treetocheck.position.y + rp}}, force = force} > 0 then
+									deadening_tree(surface, treetocheck)
+									break
 								end
 							end
 						end
 					end
 				end
-				if treetocheck and treetocheck.valid == true then
-					local tile = surface.get_tile(treetocheck.position.x, treetocheck.position.y)
-					if tile and tile.valid == true then
-						local fertility = 0
-						if noxy_trees.fertility[tile.name] then
-							fertility = noxy_trees.fertility[tile.name]
-						end
-						if fertility < config.deaths_by_lack_of_fertility_minimum
-							and fertility < global.rng() then
-							if trees_count / config.maximum_trees_per_chunk > global.rng() then
-								deadening_tree(surface, treetocheck)
-							end
-						end
+			end
+			if treetocheck and treetocheck.valid == true then
+				local tile = surface.get_tile(treetocheck.position.x, treetocheck.position.y)
+				if tile and tile.valid == true then
+					local fertility = 0
+					if noxy_trees.fertility[tile.name] then
+						fertility = noxy_trees.fertility[tile.name]
 					end
-				end
-				if config.deaths_by_pollution_bias > 0 then
-					if treetocheck and treetocheck.valid == true then
-						if surface.get_pollution{treetocheck.position.x, treetocheck.position.y} / config.deaths_by_pollution_bias > 1 + global.rng() then
+					if fertility < config.deaths_by_lack_of_fertility_minimum
+						and fertility < global.rng() then
+						if trees_count / config.maximum_trees_per_chunk > global.rng() then
 							deadening_tree(surface, treetocheck)
 						end
 					end
 				end
-				tokill = tokill - 1
-			until tokill <= 0
-		end
-		if #tilestoupdate > 0 then
-			surface.set_tiles(tilestoupdate)
-			global.degradedcount = global.degradedcount + #tilestoupdate
-		end
+			end
+			if config.deaths_by_pollution_bias > 0 then
+				if treetocheck and treetocheck.valid == true then
+					if surface.get_pollution{treetocheck.position.x, treetocheck.position.y} / config.deaths_by_pollution_bias > 1 + global.rng() then
+						deadening_tree(surface, treetocheck)
+					end
+				end
+			end
+			tokill = tokill - 1
+		until tokill <= 0
+	end
+	if #tilestoupdate > 0 then
+		surface.set_tiles(tilestoupdate)
+		global.degradedcount = global.degradedcount + #tilestoupdate
 	end
 end
 
