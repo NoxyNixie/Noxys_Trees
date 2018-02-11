@@ -2,7 +2,6 @@ local noxy_trees = {}
 
 local mathfloor = math.floor
 local mathceil = math.ceil
-local tableinsert = table.insert
 
 noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["dead-dry-hairy-tree"] = true,
@@ -512,7 +511,7 @@ end
 local function cache_forces()
 	for _, force in pairs(game.forces) do
 		if #force.players > 0 then
-			tableinsert(global.forces, force.name)
+			global.forces[#global.forces + 1] = force.name
 		end
 	end
 end
@@ -606,7 +605,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 			if config.degrade_tiles and noxy_trees.degradable[tile.name] then
 				if noxy_trees.degradable[tile.name] == true then
 					if tile.hidden_tile then
-						tableinsert(tilestoupdate, {["name"] = tile.hidden_tile, ["position"] = tile.position})
+						tilestoupdate[#tilestoupdate + 1] = {["name"] = tile.hidden_tile, ["position"] = tile.position}
 					else
 						nx_debug("ERROR: Can't degrade tile because no hidden_tile: " .. tile.name)
 					end
@@ -614,7 +613,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 					if
 						game.tile_prototypes[noxy_trees.degradable[tile.name]]
 					then
-						tableinsert(tilestoupdate, {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position})
+						tilestoupdate[#tilestoupdate + 1] = {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position}
 					else
 						nx_debug("ERROR: Invalid tile?: " .. noxy_trees.degradable[tile.name] .. " Tried to convert from: " .. tile.name)
 					end
@@ -785,7 +784,7 @@ script.on_event({defines.events.on_tick}, function(event)
 			noxy_trees.combined = {}
 			for _, tree in pairs(noxy_trees.alive) do
 				if game.entity_prototypes[tree] then
-					tableinsert(noxy_trees.combined, tree)
+					noxy_trees.combined[#noxy_trees.combined + 1] = tree
 				end
 			end
 		end
@@ -827,7 +826,7 @@ script.on_event({defines.events.on_tick}, function(event)
 						if #global.chunks < 1 then
 							-- populate our chunk array
 							for chunk in surface.get_chunks() do
-								tableinsert(global.chunks, chunk)
+								global.chunks[#global.chunks + 1] = chunk
 							end
 							global.chunkcycles = global.chunkcycles + 1
 							-- nx_debug("Chunk cycle completed. New cycle added " .. #global.chunks .. " chunks to be processed.")
