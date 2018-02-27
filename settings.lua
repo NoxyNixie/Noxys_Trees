@@ -9,6 +9,13 @@ data:extend({
 		maximum_value = 1,
 		order = "b",
 	},
+	{
+		type = "double-setting",
+		name = "Noxys_Trees-emission_multiplier",
+		setting_type = "startup",
+		default_value = 1,
+		order = "c",
+	},
 	-- Global
 	{
 		type = "bool-setting",
