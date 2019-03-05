@@ -10,6 +10,10 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["dry-hairy-tree"]      = true,
 	["dry-tree"]            = true,
 	["green-coral"]         = true,
+	-- Angels Bio Processings special trees.
+	["temperate-tree"]      = true,
+	["swamp-tree"]          = true,
+	["desert-tree"]         = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles
@@ -591,78 +595,77 @@ local function deadening_tree(surface, tree)
 end
 
 local function spawn_trees(surface, parent, tilestoupdate, newpos)
-	if not noxy_trees.disabled[parent.name] then
-		if not newpos then
-			local distance = config.expansion_distance
-			newpos = {
-				parent.position.x + global.rng(distance * 2) - distance + (global.rng() - 0.5),
-				parent.position.y + global.rng(distance * 2) - distance + (global.rng() - 0.5),
-			}
-		end
-		local tile = surface.get_tile(newpos[1], newpos[2])
-		if tile and tile.valid == true then
-			-- Tile degradation
-			if config.degrade_tiles and noxy_trees.degradable[tile.name] then
-				if noxy_trees.degradable[tile.name] == true then
-					if tile.hidden_tile then
-						tilestoupdate[#tilestoupdate + 1] = {["name"] = tile.hidden_tile, ["position"] = tile.position}
-					else
-						nx_debug("ERROR: Can't degrade tile because no hidden_tile: " .. tile.name)
-					end
+	if noxy_trees.disabled[parent.name] then return end
+	if not newpos then
+		local distance = config.expansion_distance
+		newpos = {
+			parent.position.x + global.rng(distance * 2) - distance + (global.rng() - 0.5),
+			parent.position.y + global.rng(distance * 2) - distance + (global.rng() - 0.5),
+		}
+	end
+	local tile = surface.get_tile(newpos[1], newpos[2])
+	if tile and tile.valid == true then
+		-- Tile degradation
+		if config.degrade_tiles and noxy_trees.degradable[tile.name] then
+			if noxy_trees.degradable[tile.name] == true then
+				if tile.hidden_tile then
+					tilestoupdate[#tilestoupdate + 1] = {["name"] = tile.hidden_tile, ["position"] = tile.position}
 				else
-					if
-						game.tile_prototypes[noxy_trees.degradable[tile.name]]
-					then
-						tilestoupdate[#tilestoupdate + 1] = {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position}
-					else
-						nx_debug("ERROR: Invalid tile?: " .. noxy_trees.degradable[tile.name] .. " Tried to convert from: " .. tile.name)
-					end
+					nx_debug("ERROR: Can't degrade tile because no hidden_tile: " .. tile.name)
 				end
-			elseif -- Tree spreading
-				(noxy_trees.fertility[tile.name] or 0) > 0 and
-				not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
-				noxy_trees.fertility[tile.name] > global.rng() and
-				surface.can_place_entity{name = parent.name, position = newpos}
-			then
-				local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
-				if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 0 then
-					return
+			else
+				if
+					game.tile_prototypes[noxy_trees.degradable[tile.name]]
+				then
+					tilestoupdate[#tilestoupdate + 1] = {["name"] = noxy_trees.degradable[tile.name], ["position"] = tile.position}
+				else
+					nx_debug("ERROR: Invalid tile?: " .. noxy_trees.degradable[tile.name] .. " Tried to convert from: " .. tile.name)
 				end
-				local rp = config.minimum_distance_to_player_entities
-				if rp > 0 then
-					for _, force in pairs(game.forces) do
-						if #force.players > 0 then
-							if surface.count_entities_filtered{area = {{newpos[1] - rp, newpos[2] - rp}, {newpos[1] + rp, newpos[2] + rp}}, force = force} > 0 then
-								return
-							end
+			end
+		elseif -- Tree spreading
+			(noxy_trees.fertility[tile.name] or 0) > 0 and
+			not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
+			noxy_trees.fertility[tile.name] > global.rng() and
+			surface.can_place_entity{name = parent.name, position = newpos}
+		then
+			local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
+			if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 0 then
+				return
+			end
+			local rp = config.minimum_distance_to_player_entities
+			if rp > 0 then
+				for _, force in pairs(game.forces) do
+					if #force.players > 0 then
+						if surface.count_entities_filtered{area = {{newpos[1] - rp, newpos[2] - rp}, {newpos[1] + rp, newpos[2] + rp}}, force = force} > 0 then
+							return
 						end
 					end
 				end
-				local er = config.minimum_distance_to_enemies
-				if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 0 or
-					surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 0 then
-					return
-				end
-				local ur = config.minimum_distance_to_uranium
-				if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 0 then
-					return
-				end
-				surface.create_entity{name = parent.name, position = newpos}
-				global.spawnedcount = global.spawnedcount + 1
-			elseif -- Tree resurrections
-				(noxy_trees.fertility[tile.name] or 0) > 0 and
-				noxy_trees.dead[parent.name] and
-				noxy_trees.fertility[tile.name] > global.rng()
-			then
-				-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
-				if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
-					-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
-					local newname = noxy_trees.combined[global.rng(#noxy_trees.combined)]
-					newpos = parent.position
-					parent.destroy()
-					surface.create_entity{name = newname, position = newpos}
-					global.resurrected = global.resurrected + 1
-				end
+			end
+			local er = config.minimum_distance_to_enemies
+			if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 0 or
+				surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 0 then
+				return
+			end
+			local ur = config.minimum_distance_to_uranium
+			if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+				return
+			end
+			surface.create_entity{name = parent.name, position = newpos}
+			global.spawnedcount = global.spawnedcount + 1
+		elseif -- Tree resurrections
+			(noxy_trees.fertility[tile.name] or 0) > 0 and
+			noxy_trees.dead[parent.name] and
+			noxy_trees.fertility[tile.name] > global.rng()
+		then
+			-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
+			if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
+				-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
+				local newname = noxy_trees.combined[global.rng(#noxy_trees.combined)]
+				newpos = parent.position
+				parent.destroy()
+				surface.create_entity{name = newname, position = newpos}
+				global.resurrected = global.resurrected + 1
 			end
 		end
 	end
