@@ -793,7 +793,7 @@ script.on_event({defines.events.on_tick}, function(event)
 			if global.lastdebugmessage + config.debug_interval < event.tick then
 				local timegap = (event.tick - global.lastdebugmessage) / 60
 				if not global.chunkcycles then global.chunkcycles = 0 end
-				nx_debug("Chunks: " .. #global.chunks .. "/" .. global.lasttotalchunks .. "."
+				nx_debug("Chunks: " .. global.chunkindex .. "/" .. #global.chunks .. "(" .. global.lasttotalchunks .. ")."
 						.. " Grown: " .. global.spawnedcount .. " (" .. round(global.spawnedcount / timegap, 2) .. "/s)."
 						.. " Deaded: " .. global.deadedcount .. " (" .. round(global.deadedcount / timegap, 2) .. "/s)."
 						.. " Killed: " .. global.killedcount .. " (" .. round(global.killedcount / timegap, 2) .. "/s)."
@@ -818,7 +818,7 @@ script.on_event({defines.events.on_tick}, function(event)
 				if surface and surface.valid then
 					local chunksdone = 0
 					local chunkstodo = config.chunks_per_operation
-					if config.chunks_per_operation_enable_scaling then
+					if config.chunks_per_operation_enable_scaling then --todo: Add cap on number of chunks per operation; maybe change the scaling so that it increases how often it runs instead of how many chunks
 						chunkstodo = mathfloor(chunkstodo * (global.lasttotalchunks / config.chunks_per_operation_scaling_bias))
 					end
 					if chunkstodo < 1 then chunkstodo = 1 end
@@ -840,6 +840,11 @@ script.on_event({defines.events.on_tick}, function(event)
 							global.chunks = {}
 							break
 						end
+						-- if not surface.is_chunk_generated(global.chunks[global.chunkindex]) then -- The chunk was removed
+						-- 	global.chunkindex = 0
+						-- 	global.chunks = {}
+						-- 	break
+						-- end
 						process_chunk(surface, global.chunks[global.chunkindex])
 						-- Done
 						chunksdone = chunksdone + 1
