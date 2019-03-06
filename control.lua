@@ -14,6 +14,9 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["temperate-tree"]      = true,
 	["swamp-tree"]          = true,
 	["desert-tree"]         = true,
+	["temperate-garden"]    = true,
+	["swamp-garden"]        = true,
+	["desert-garden"]       = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles
