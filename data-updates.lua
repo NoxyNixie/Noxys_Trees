@@ -5,6 +5,8 @@ end
 local mul = settings.startup["Noxys_Trees-emission_multiplier"].value
 if mul ~= 1 then
 	for _,v in pairs(data.raw.tree) do
-		v.emissions_per_second = v.emissions_per_second * mul
+		if v.emissions_per_second then
+			v.emissions_per_second = v.emissions_per_second * mul
+		end
 	end
 end
