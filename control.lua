@@ -17,6 +17,7 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["temperate-garden"]    = true,
 	["swamp-garden"]        = true,
 	["desert-garden"]       = true,
+	["puffer-nest"]         = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles
@@ -686,8 +687,8 @@ local function process_chunk(surface, chunk)
 				local tree = trees[global.rng(1, trees_count)]
 				if tree and tree.valid == true then
 					deadening_tree(surface, tree)
-					tokill = tokill - 1
 				end
+        tokill = tokill - 1
 			until tokill < 1
 		end
 	elseif trees_count > 0 then
@@ -818,7 +819,7 @@ script.on_event({defines.events.on_tick}, function(event)
 		if global.tick <= 0 or global.tick == nil then
 			global.tick = config.ticks_between_operations
 			-- Do the stuff
-			local last_surface, surface_index = next(global.surfaces, global.last_surface) -- Currently I do not know of any mods that add more surfaces that would warrant tree spreading so just nauvis will do.
+			local last_surface, surface_index = next(global.surfaces, global.last_surface)
 			if surface_index then
 				local surface = game.surfaces[surface_index]
 				if surface and surface.valid then
@@ -835,7 +836,6 @@ script.on_event({defines.events.on_tick}, function(event)
 								global.chunks[#global.chunks + 1] = chunk
 							end
 							global.chunkcycles = global.chunkcycles + 1
-							-- nx_debug("Chunk cycle completed. New cycle added " .. #global.chunks .. " chunks to be processed.")
 							global.lasttotalchunks = #global.chunks
 						end
 						if #global.chunks < 1 then nx_debug("Bailing because no chunks!") break end
@@ -846,11 +846,6 @@ script.on_event({defines.events.on_tick}, function(event)
 							global.chunks = {}
 							break
 						end
-						-- if not surface.is_chunk_generated(global.chunks[global.chunkindex]) then -- The chunk was removed
-						-- 	global.chunkindex = 0
-						-- 	global.chunks = {}
-						-- 	break
-						-- end
 						process_chunk(surface, global.chunks[global.chunkindex])
 						-- Done
 						chunksdone = chunksdone + 1
