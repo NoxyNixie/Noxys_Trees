@@ -7,6 +7,7 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["dead-dry-hairy-tree"] = true,
 	["dead-grey-trunk"]     = true,
 	["dead-tree"]           = true,
+	["dead-tree-desert"]    = true,
 	["dry-hairy-tree"]      = true,
 	["dry-tree"]            = true,
 	["green-coral"]         = true,
@@ -20,6 +21,21 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["puffer-nest"]         = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
+	-- Vanilla tiles 0.18
+	["refined-concrete"]              = "concrete",
+	["refined-hazard-concrete-left"]  = "refined-concrete",
+	["refined-hazard-concrete-right"] = "refined-concrete",
+	["red-refined-concrete"]          = "refined-concrete",
+	["green-refined-concrete"]        = "refined-concrete",
+	["blue-refined-concrete"]         = "refined-concrete",
+	["orange-refined-concrete"]       = "refined-concrete",
+	["yellow-refined-concrete"]       = "refined-concrete",
+	["pink-refined-concrete"]         = "refined-concrete",
+	["purple-refined-concrete"]       = "refined-concrete",
+	["black-refined-concrete"]        = "refined-concrete",
+	["brown-refined-concrete"]        = "refined-concrete",
+	["cyan-refined-concrete"]         = "refined-concrete",
+	["acid-refined-concrete"]         = "refined-concrete",
 	-- Vanilla tiles
 	["concrete"]              = "stone-path",
 	["stone-path"]            = true,
@@ -195,6 +211,13 @@ noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Other mods
 	["wood floors_brick speed"] = true,
 }
+
+-- Create a list for use in a filter function based of the degradable tiles.
+noxy_trees.tilefilter = {}
+for k,_ in pairs(noxy_trees.degradable) do
+	noxy_trees.tilefilter[#noxy_trees.tilefilter + 1] = k
+end
+
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
 	-- Vanilla 0.16
 	["dirt-1"]       = 0.1,
@@ -561,6 +584,7 @@ local function cache_settings()
 	config.minimum_distance_to_enemies         = settings.global["Noxys_Trees-minimum-distance-to-enemies"].value
 	config.minimum_distance_to_uranium         = settings.global["Noxys_Trees-minimum-distance-to-uranium"].value
 	config.minimum_distance_to_player_entities = settings.global["Noxys_Trees-minimum-distance-to-player-entities"].value
+	config.minimum_distance_to_degradetiles    = settings.global["Noxys_Trees-minimum-distance-to-degradeable-tiles"].value
 	config.deaths_by_lack_of_fertility_minimum = settings.global["Noxys_Trees-deaths-by-lack-of-fertility-minimum"].value
 	config.deaths_by_pollution_bias            = settings.global["Noxys_Trees-deaths-by-pollution-bias"].value
 	config.trees_to_grow_per_chunk_percentage  = settings.global["Noxys_Trees-trees-to-grow-per-chunk-percentage"].value
@@ -633,27 +657,33 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 			surface.can_place_entity{name = parent.name, position = newpos}
 		then
 			local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
-			if surface.count_entities_filtered{area = {{newpos[1] - r, newpos[2] - r}, {newpos[1] + r, newpos[2] + r}}, type = "tree"} > 0 then
+			if surface.count_entities_filtered{position = newpos, radius = r, type = "tree", limit = 1} > 0 then
 				return
 			end
 			local rp = config.minimum_distance_to_player_entities
 			if rp > 0 then
 				for _, force in pairs(game.forces) do
 					if #force.players > 0 then
-						if surface.count_entities_filtered{area = {{newpos[1] - rp, newpos[2] - rp}, {newpos[1] + rp, newpos[2] + rp}}, force = force} > 0 then
+						if surface.count_entities_filtered{position = newpos, radius = rp, force = force, limit = 1} > 0 then
 							return
 						end
 					end
 				end
 			end
 			local er = config.minimum_distance_to_enemies
-			if surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "unit-spawner", force = "enemy"} > 0 or
-				surface.count_entities_filtered{area = {{newpos[1] - er, newpos[2] - er}, {newpos[1] + er, newpos[2] + er}}, type = "turret", force = "enemy"} > 0 then
+			if surface.count_entities_filtered{position = newpos, radius = er, type = "unit-spawner", force = "enemy", limit = 1} > 0 or
+				surface.count_entities_filtered{position = newpos, radius = er, type = "turret", force = "enemy", limit = 1} > 0 then
 				return
 			end
 			local ur = config.minimum_distance_to_uranium
-			if surface.count_entities_filtered{area = {{newpos[1] - ur, newpos[2] - ur}, {newpos[1] + ur, newpos[2] + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+			if surface.count_entities_filtered{position = newpos, radius = ur, type = "resource", name = "uranium-ore", limit = 1} > 0 then
 				return
+			end
+			local tr = config.minimum_distance_to_degradetiles
+			if tr > 0 then
+				if surface.count_tiles_filtered{position = newpos, radius = tr, name = noxy_trees.tilefilter, limit = 1, has_hidden_tile = true} > 0 then
+					return
+				end
 			end
 			surface.create_entity{name = parent.name, position = newpos}
 			global.spawnedcount = global.spawnedcount + 1
@@ -714,17 +744,17 @@ local function process_chunk(surface, chunk)
 			if treetocheck and treetocheck.valid == true then
 				local er = config.minimum_distance_to_enemies
 				local ur = config.minimum_distance_to_uranium
-				if surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "unit-spawner", force = "enemy"} > 0 or
-					surface.count_entities_filtered{area = {{treetocheck.position.x - er, treetocheck.position.y - er}, {treetocheck.position.x + er, treetocheck.position.y + er}}, type = "turret", force = "enemy"} > 0 then
+				if surface.count_entities_filtered{position = treetocheck.position, radius = er, type = "unit-spawner", force = "enemy", limit = 1} > 0 or
+					surface.count_entities_filtered{position = treetocheck.position, radius = er, type = "turret", force = "enemy", limit = 1} > 0 then
 					deadening_tree(surface, treetocheck)
-				elseif surface.count_entities_filtered{area = {{treetocheck.position.x - ur, treetocheck.position.y - ur}, {treetocheck.position.x + ur, treetocheck.position.y + ur}}, type = "resource", name = "uranium-ore"} > 0 then
+				elseif surface.count_entities_filtered{position = treetocheck.position, radius = ur, type = "resource", name = "uranium-ore", limit = 1} > 0 then
 					deadening_tree(surface, treetocheck)
 				else
 					local rp = config.minimum_distance_to_player_entities
 					if rp > 0 then
 						for _, force in pairs(game.forces) do
 							if #force.players > 0 then
-								if surface.count_entities_filtered{area = {{treetocheck.position.x - rp, treetocheck.position.y - rp}, {treetocheck.position.x + rp, treetocheck.position.y + rp}}, force = force} > 0 then
+								if surface.count_entities_filtered{position = treetocheck.position, radius = rp, force = force, limit = 1} > 0 then
 									deadening_tree(surface, treetocheck)
 									break
 								end
