@@ -43,3 +43,7 @@ Want to discuss this mod or talk to Noxy directly? You can just go to the discor
 | Trees to grow per chunk percentage | Allows fine grained control over the performance of this mod and the speed at which the trees expand.<br><br>Each chunk will at least try to generate one tree but this percentage can increase it to more based on the existing trees in the chunk.<br><br>If the percentage is 0.01 (1%) and the chunk has 200 trees it will try to generate 2 additional trees per operation. |
 | Maximum trees per chunk | If there are more trees than this number in a chunk it will not expand any trees in that chunk.<br>(Vanilla dense forests seem to be around 512 trees per chunk) |
 | Expansion distance | How far in tiles a tree can generate from its originating tree. |
+
+## Translation
+
+You are welcome to help with localization, please use [this Crowdin project](https://crowdin.com/project/factorio-mods-localization). You can find more details [here](https://github.com/dima74/factorio-mods-localization#how-to-translate-using-crowdin).
