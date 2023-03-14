@@ -1,3 +1,4 @@
+-- luacheck: globals game global settings script defines, ignore 631
 local noxy_trees = {}
 
 local mathfloor = math.floor
@@ -21,6 +22,9 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["swamp-garden"]        = true,
 	["desert-garden"]       = true,
 	["puffer-nest"]         = true,
+}
+noxy_trees.disabled_match = {
+	["-planted"] = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles 0.18
@@ -852,6 +856,18 @@ script.on_event({defines.events.on_tick}, function(event)
 					noxy_trees.combined[#noxy_trees.combined + 1] = tree
 				end
 			end
+		end
+		-- Add disabled prototypes
+		if #noxy_trees.disabled_match > 0 then
+			for e,_ in pairs(game.entity_prototypes) do
+				for k,_ in pairs(noxy_trees.disabled_match) do
+					if e.find(k) then
+						noxy_trees.disabled[e] = true
+					end
+				end
+			end
+			-- Clear so we don't do this again.
+			noxy_trees.disabled_match = {}
 		end
 		-- Debug
 		if config.debug then
