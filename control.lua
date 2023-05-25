@@ -553,6 +553,26 @@ local function cache_forces()
 	end
 end
 
+local function cache_surfaces()
+	if game then
+		global.surfaces = {}
+		for s in string.gmatch(config.surfaces, '([^,;]+)') do
+			local su = game.get_surface(s)
+			if not su then
+				if tonumber(s) then
+					su = game.get_surface(tonumber(s))
+				end
+			end
+			if su and su.valid then
+				table.insert(global.surfaces, su.index)
+			end
+		end
+		if (#global.surfaces < 1) then
+			global.surfaces = {1}
+		end
+	end
+end
+
 local function initialize()
 	global.chunks           = {}
 	global.chunkindex       = 0
@@ -570,15 +590,7 @@ local function initialize()
 	global.lastdebugmessage = 0
 	global.lasttotalchunks  = 0
 
-	for s in string.gmatch(config.surfaces, '([^,;]+)') do
-		local su = game.get_surface(s)
-		if su and su.valid then
-			table.insert(global.surfaces, su.index)
-		end
-	end
-	if (#global.surfaces < 1) then
-		global.surfaces = {1}
-	end
+	cache_surfaces()
 
 	cache_forces()
 end
@@ -605,6 +617,8 @@ local function cache_settings()
 	config.maximum_trees_per_chunk             = settings.global["Noxys_Trees-maximum-trees-per-chunk"].value
 	config.expansion_distance                  = settings.global["Noxys_Trees-expansion-distance"].value
 	config.surfaces                            = settings.global["Noxys_Trees-surfaces"].value
+
+	cache_surfaces()
 end
 
 cache_settings()
@@ -895,7 +909,7 @@ script.on_event({defines.events.on_tick}, function(event)
 			-- Do the stuff
 			local last_surface, surface_index = next(global.surfaces, global.last_surface)
 			if surface_index then
-				local surface = game.surfaces[surface_index]
+				local surface = game.get_surface(surface_index)
 				if surface and surface.valid then
 					local chunksdone = 0
 					local chunkstodo = config.chunks_per_operation
