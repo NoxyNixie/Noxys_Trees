@@ -24,7 +24,8 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["puffer-nest"]         = true,
 }
 noxy_trees.disabled_match = {
-	["[-]planted"] = true,
+	["[-]planted"]         = true,
+	["sapling[-]stage[-]"] = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles 0.18
