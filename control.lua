@@ -24,7 +24,8 @@ noxy_trees.disabled = { -- Disables the spreading of these specific entities.
 	["puffer-nest"]         = true,
 }
 noxy_trees.disabled_match = {
-	["-planted"] = true,
+	["[-]planted"]         = true,
+	["sapling[-]stage[-]"] = true,
 }
 noxy_trees.degradable = { -- The floor tiles that can be degraded and into what.
 	-- Vanilla tiles 0.18
@@ -872,10 +873,10 @@ script.on_event({defines.events.on_tick}, function(event)
 			end
 		end
 		-- Add disabled prototypes
-		if #noxy_trees.disabled_match > 0 then
+		if next(noxy_trees.disabled_match) then
 			for e,_ in pairs(game.entity_prototypes) do
 				for k,_ in pairs(noxy_trees.disabled_match) do
-					if e.find(k) then
+					if e:find(k) then
 						noxy_trees.disabled[e] = true
 					end
 				end
