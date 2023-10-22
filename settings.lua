@@ -192,5 +192,12 @@ data:extend({
 		default_value = "1",
 		order = "a-l",
 	},
+	{
+		type = "bool-setting",
+		name = "Noxys_Trees-trees-grow-on-landfill",
+		setting_type = "runtime-global",
+		default_value = false,
+		order = "a-m",
+	},
 	-- Per user
 })
