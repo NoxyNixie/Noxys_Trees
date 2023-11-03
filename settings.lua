@@ -58,6 +58,13 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
+		name = "Noxys_Trees-do-not-degrade-reinforced-tiles",
+		setting_type = "runtime-global",
+		default_value = false,
+		order = "a-c-a"
+	},
+	{
+		type = "bool-setting",
 		name = "Noxys_Trees-overpopulation-kills-trees",
 		setting_type = "runtime-global",
 		default_value = true,
