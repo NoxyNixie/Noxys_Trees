@@ -11,6 +11,15 @@ data:extend({
 	},
 	{
 		type = "double-setting",
+		name = "Noxys_Trees-tree_fire_spread_speed_factor",
+		setting_type = "startup",
+		minimum_value = 0.0001,
+		default_value = 1.0,
+		maximum_value = 10.0,
+		order = "b",
+	},
+	{
+		type = "double-setting",
 		name = "Noxys_Trees-emission_multiplier",
 		setting_type = "startup",
 		default_value = 1,
