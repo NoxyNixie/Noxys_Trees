@@ -452,6 +452,11 @@ noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no
 	["frozen-snow-8"]                = 0.5,
 	["frozen-snow-9"]                = 0.5,
 }
+
+noxy_trees.landfill_fertility = {
+	["landfill"]                     = 0.5,
+}
+
 noxy_trees.deathselector = {
 	"dead-grey-trunk",
 	"dry-hairy-tree",
@@ -625,6 +630,7 @@ local function cache_settings()
 	config.maximum_trees_per_chunk             = settings.global["Noxys_Trees-maximum-trees-per-chunk"].value
 	config.expansion_distance                  = settings.global["Noxys_Trees-expansion-distance"].value
 	config.surfaces                            = settings.global["Noxys_Trees-surfaces"].value
+	config.trees_grow_on_landfill              = settings.global["Noxys_Trees-trees-grow-on-landfill"].value
 
 	cache_surfaces()
 end
@@ -676,6 +682,16 @@ local function deadening_tree(surface, tree)
 	end
 end
 
+local function fertility(tile_name)
+	local ret = noxy_trees.fertility[tile_name]
+	if ret then return ret end
+	if config.trees_grow_on_landfill then
+		ret = noxy_trees.landfill_fertility[tile_name]
+		if ret then return ret end
+	end
+	return 0
+end
+
 local function spawn_trees(surface, parent, tilestoupdate, newpos)
 	if noxy_trees.disabled[parent.name] then return end
 	if not newpos then
@@ -712,12 +728,12 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 				end
 			end
 		elseif -- Tree spreading
-			(noxy_trees.fertility[tile.name] or 0) > 0 and
+			fertility(tile.name) > 0 and
 			not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
-			noxy_trees.fertility[tile.name] > global.rng() and
+			fertility(tile.name) > global.rng() and
 			surface.can_place_entity{name = parent.name, position = newpos}
 		then
-			local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
+			local r = config.minimum_distance_between_tree / fertility(tile.name)
 			if surface.count_entities_filtered{position = newpos, radius = r, type = "tree", limit = 1} > 0 then
 				return
 			end
@@ -749,9 +765,9 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 			surface.create_entity{name = parent.name, position = newpos}
 			global.spawnedcount = global.spawnedcount + 1
 		elseif -- Tree resurrections
-			(noxy_trees.fertility[tile.name] or 0) > 0 and
+			fertility(tile.name) > 0 and
 			noxy_trees.dead[parent.name] and
-			noxy_trees.fertility[tile.name] > global.rng()
+			fertility(tile.name) > global.rng()
 		then
 			-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
 			if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
@@ -827,12 +843,9 @@ local function process_chunk(surface, chunk)
 			if treetocheck and treetocheck.valid == true then
 				local tile = surface.get_tile(treetocheck.position.x, treetocheck.position.y)
 				if tile and tile.valid == true then
-					local fertility = 0
-					if noxy_trees.fertility[tile.name] then
-						fertility = noxy_trees.fertility[tile.name]
-					end
-					if fertility < config.deaths_by_lack_of_fertility_minimum
-						and fertility < global.rng() then
+					local fert = fertility(tile.name)
+					if fert < config.deaths_by_lack_of_fertility_minimum
+						and fert < global.rng() then
 						if trees_count / config.maximum_trees_per_chunk > global.rng() then
 							deadening_tree(surface, treetocheck)
 						end
