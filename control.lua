@@ -887,14 +887,14 @@ script.on_event({defines.events.on_tick}, function(event)
 		if not noxy_trees.combined then
 			noxy_trees.combined = {}
 			for _, tree in pairs(noxy_trees.alive) do
-				if game.entity_prototypes[tree] then
+				if prototypes.entity[tree] then
 					noxy_trees.combined[#noxy_trees.combined + 1] = tree
 				end
 			end
 		end
 		-- Add disabled prototypes
 		if next(noxy_trees.disabled_match) then
-			for e,_ in pairs(game.entity_prototypes) do
+			for e,_ in pairs(prototypes.entity) do
 				for k,_ in pairs(noxy_trees.disabled_match) do
 					if e:find(k) then
 						noxy_trees.disabled[e] = true
