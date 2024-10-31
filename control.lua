@@ -557,14 +557,14 @@ end
 local function cache_forces()
 	for _, force in pairs(game.forces) do
 		if #force.players > 0 then
-			global.forces[#global.forces + 1] = force.name
+			storage.forces[#storage.forces + 1] = force.name
 		end
 	end
 end
 
 local function cache_surfaces()
 	if game then
-		global.surfaces = {}
+		storage.surfaces = {}
 		for s in string.gmatch(config.surfaces, '([^,;]+)') do
 			local su = game.get_surface(s)
 			if not su then
@@ -573,31 +573,31 @@ local function cache_surfaces()
 				end
 			end
 			if su and su.valid then
-				table.insert(global.surfaces, su.index)
+				table.insert(storage.surfaces, su.index)
 			end
 		end
-		if (#global.surfaces < 1) then
-			global.surfaces = {1}
+		if (#storage.surfaces < 1) then
+			storage.surfaces = {1}
 		end
 	end
 end
 
 local function initialize()
-	global.chunks           = {}
-	global.chunkindex       = 0
-	global.surfaces         = {}
-	global.last_surface     = nil
-	global.forces           = {}
-	global.tick             = 0
-	global.rng              = game.create_random_generator()
-	global.chunkcycles      = 0
-	global.spawnedcount     = 0
-	global.deadedcount      = 0
-	global.killedcount      = 0
-	global.degradedcount    = 0
-	global.resurrected      = 0
-	global.lastdebugmessage = 0
-	global.lasttotalchunks  = 0
+	storage.chunks           = {}
+	storage.chunkindex       = 0
+	storage.surfaces         = {}
+	storage.last_surface     = nil
+	storage.forces           = {}
+	storage.tick             = 0
+	storage.rng              = game.create_random_generator()
+	storage.chunkcycles      = 0
+	storage.spawnedcount     = 0
+	storage.deadedcount      = 0
+	storage.killedcount      = 0
+	storage.degradedcount    = 0
+	storage.resurrected      = 0
+	storage.lastdebugmessage = 0
+	storage.lasttotalchunks  = 0
 
 	cache_surfaces()
 
@@ -651,7 +651,7 @@ end
 local function deadening_tree(surface, tree)
 	if noxy_trees.dead[tree.name] and noxy_trees.dead[tree.name] == true then
 		tree.die()
-		global.killedcount = global.killedcount + 1
+		storage.killedcount = storage.killedcount + 1
 		return
 	end
 
@@ -662,7 +662,7 @@ local function deadening_tree(surface, tree)
 			if #force.players > 0 then
 				if surface.count_entities_filtered{position = tree.position, radius = rp, force = force, limit = 1} > 0 then
 					tree.die()
-					global.deadedcount = global.deadedcount + 1
+					storage.deadedcount = storage.deadedcount + 1
 					return
 				end
 			end
@@ -673,13 +673,13 @@ local function deadening_tree(surface, tree)
 		if noxy_trees.dead[tree.name] ~= true then
 			surface.create_entity{name = noxy_trees.dead[tree.name], position = tree.position}
 			tree.die()
-			global.deadedcount = global.deadedcount + 1
+			storage.deadedcount = storage.deadedcount + 1
 		end
 	else
-		local deadtree = noxy_trees.deathselector[global.rng(1, #noxy_trees.deathselector)]
+		local deadtree = noxy_trees.deathselector[storage.rng(1, #noxy_trees.deathselector)]
 		surface.create_entity{name = deadtree, position = tree.position}
 		tree.die()
-		global.deadedcount = global.deadedcount + 1
+		storage.deadedcount = storage.deadedcount + 1
 	end
 end
 
@@ -688,8 +688,8 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 	if not newpos then
 		local distance = config.expansion_distance
 		newpos = {
-			parent.position.x + global.rng(distance * 2) - distance + (global.rng() - 0.5),
-			parent.position.y + global.rng(distance * 2) - distance + (global.rng() - 0.5),
+			parent.position.x + storage.rng(distance * 2) - distance + (storage.rng() - 0.5),
+			parent.position.y + storage.rng(distance * 2) - distance + (storage.rng() - 0.5),
 		}
 	end
 	local tile = surface.get_tile(newpos[1], newpos[2])
@@ -721,7 +721,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 		elseif -- Tree spreading
 			(noxy_trees.fertility[tile.name] or 0) > 0 and
 			not noxy_trees.dead[parent.name] and -- Stop dead trees from spreading.
-			noxy_trees.fertility[tile.name] > global.rng() and
+			noxy_trees.fertility[tile.name] > storage.rng() and
 			surface.can_place_entity{name = parent.name, position = newpos}
 		then
 			local r = config.minimum_distance_between_tree / noxy_trees.fertility[tile.name]
@@ -754,20 +754,20 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
 				end
 			end
 			surface.create_entity{name = parent.name, position = newpos}
-			global.spawnedcount = global.spawnedcount + 1
+			storage.spawnedcount = storage.spawnedcount + 1
 		elseif -- Tree resurrections
 			(noxy_trees.fertility[tile.name] or 0) > 0 and
 			noxy_trees.dead[parent.name] and
-			noxy_trees.fertility[tile.name] > global.rng()
+			noxy_trees.fertility[tile.name] > storage.rng()
 		then
 			-- Only if polution is low enough we do a resurrect (which can also be seen as a mutation)
-			if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + global.rng() then
+			if surface.get_pollution{parent.position.x, parent.position.y} / config.deaths_by_pollution_bias < 1 + storage.rng() then
 				-- We can skip the distance checks here since the parent tree already exists and we are just going to replace that one.
-				local newname = noxy_trees.combined[global.rng(#noxy_trees.combined)]
+				local newname = noxy_trees.combined[storage.rng(#noxy_trees.combined)]
 				newpos = parent.position
 				parent.destroy()
 				surface.create_entity{name = newname, position = newpos}
-				global.resurrected = global.resurrected + 1
+				storage.resurrected = storage.resurrected + 1
 			end
 		end
 	end
@@ -782,7 +782,7 @@ local function process_chunk(surface, chunk)
 		if config.overpopulation_kills_trees then
 			local tokill = 1 + (trees_count / config.maximum_trees_per_chunk)
 			repeat
-				local tree = trees[global.rng(1, trees_count)]
+				local tree = trees[storage.rng(1, trees_count)]
 				if tree and tree.valid == true then
 					deadening_tree(surface, tree)
 				end
@@ -793,7 +793,7 @@ local function process_chunk(surface, chunk)
 		-- Grow new trees
 		local togen = 1 + mathceil(trees_count * config.trees_to_grow_per_chunk_percentage)
 		repeat
-			local parent = trees[global.rng(1, trees_count)]
+			local parent = trees[storage.rng(1, trees_count)]
 			if parent.valid then
 				spawn_trees(surface, parent, tilestoupdate)
 			end
@@ -808,7 +808,7 @@ local function process_chunk(surface, chunk)
 			tokill = tokill + mathceil(surface.get_pollution{chunk.x * 32 + 16, chunk.y * 32 + 16} / config.deaths_by_pollution_bias)
 		end
 		repeat
-			local treetocheck = trees[global.rng(1, trees_count)]
+			local treetocheck = trees[storage.rng(1, trees_count)]
 			if treetocheck and treetocheck.valid == true then
 				local er = config.minimum_distance_to_enemies
 				local ur = config.minimum_distance_to_uranium
@@ -838,8 +838,8 @@ local function process_chunk(surface, chunk)
 					if noxy_trees.fertility[tile.name] then
 						fertility = noxy_trees.fertility[tile.name]
 					end
-					if fertility < config.deaths_by_lack_of_fertility_minimum and fertility < global.rng() then
-						if trees_count / config.maximum_trees_per_chunk > global.rng() then
+					if fertility < config.deaths_by_lack_of_fertility_minimum and fertility < storage.rng() then
+						if trees_count / config.maximum_trees_per_chunk > storage.rng() then
 							deadening_tree(surface, treetocheck)
 						end
 					end
@@ -847,7 +847,7 @@ local function process_chunk(surface, chunk)
 			end
 			if config.deaths_by_pollution_bias > 0 then
 				if treetocheck and treetocheck.valid == true then
-					if surface.get_pollution{treetocheck.position.x, treetocheck.position.y} / config.deaths_by_pollution_bias > 1 + global.rng() then
+					if surface.get_pollution{treetocheck.position.x, treetocheck.position.y} / config.deaths_by_pollution_bias > 1 + storage.rng() then
 						deadening_tree(surface, treetocheck)
 					end
 				end
@@ -857,16 +857,16 @@ local function process_chunk(surface, chunk)
 	end
 	if #tilestoupdate > 0 then
 		surface.set_tiles(tilestoupdate)
-		global.degradedcount = global.degradedcount + #tilestoupdate
+		storage.degradedcount = storage.degradedcount + #tilestoupdate
 	end
 end
 
 script.on_configuration_changed(function()
-	if global.noxy_trees then
-		for k,v in pairs(global.noxy_trees) do
+	if storage.noxy_trees then
+		for k,v in pairs(storage.noxy_trees) do
 			global[k] = v
 		end
-		global.noxy_trees = nil
+		storage.noxy_trees = nil
 	end
 	initialize()
 end)
@@ -880,21 +880,21 @@ script.on_event({defines.events.on_runtime_mod_setting_changed}, cache_settings)
 script.on_event({defines.events.on_forces_merging, defines.events.on_player_changed_force}, cache_forces)
 
 script.on_event({defines.events.on_tick}, function(event)
-	local global = global
+	local global = storage
 	if config.enabled then
-		global.tick = global.tick - 1
+		storage.tick = storage.tick - 1
 		-- Check alive trees this should only run once
 		if not noxy_trees.combined then
 			noxy_trees.combined = {}
 			for _, tree in pairs(noxy_trees.alive) do
-				if game.entity_prototypes[tree] then
+				if prototypes.entity[tree] then
 					noxy_trees.combined[#noxy_trees.combined + 1] = tree
 				end
 			end
 		end
 		-- Add disabled prototypes
 		if next(noxy_trees.disabled_match) then
-			for e,_ in pairs(game.entity_prototypes) do
+			for e,_ in pairs(prototypes.entity) do
 				for k,_ in pairs(noxy_trees.disabled_match) do
 					if e:find(k) then
 						noxy_trees.disabled[e] = true
@@ -906,65 +906,65 @@ script.on_event({defines.events.on_tick}, function(event)
 		end
 		-- Debug
 		if config.debug then
-			if global.lastdebugmessage + config.debug_interval < event.tick then
-				local timegap = (event.tick - global.lastdebugmessage) / 60
-				if not global.chunkcycles then global.chunkcycles = 0 end
-				nx_debug("Chunks: " .. global.chunkindex .. "/" .. #global.chunks .. "(" .. global.lasttotalchunks .. ")."
-						.. " Grown: " .. global.spawnedcount .. " (" .. round(global.spawnedcount / timegap, 2) .. "/s)."
-						.. " Deaded: " .. global.deadedcount .. " (" .. round(global.deadedcount / timegap, 2) .. "/s)."
-						.. " Killed: " .. global.killedcount .. " (" .. round(global.killedcount / timegap, 2) .. "/s)."
-						.. " Degrade: " .. global.degradedcount .. " (" .. round(global.degradedcount / timegap, 2) .. "/s)."
-						.. " Rezzed: " .. global.resurrected .. " (" .. round(global.resurrected / timegap, 2) .. "/s)."
-						.. " Chunk Cycle: " .. global.chunkcycles .. "."
+			if storage.lastdebugmessage + config.debug_interval < event.tick then
+				local timegap = (event.tick - storage.lastdebugmessage) / 60
+				if not storage.chunkcycles then storage.chunkcycles = 0 end
+				nx_debug("Chunks: " .. storage.chunkindex .. "/" .. #storage.chunks .. "(" .. storage.lasttotalchunks .. ")."
+						.. " Grown: " .. storage.spawnedcount .. " (" .. round(storage.spawnedcount / timegap, 2) .. "/s)."
+						.. " Deaded: " .. storage.deadedcount .. " (" .. round(storage.deadedcount / timegap, 2) .. "/s)."
+						.. " Killed: " .. storage.killedcount .. " (" .. round(storage.killedcount / timegap, 2) .. "/s)."
+						.. " Degrade: " .. storage.degradedcount .. " (" .. round(storage.degradedcount / timegap, 2) .. "/s)."
+						.. " Rezzed: " .. storage.resurrected .. " (" .. round(storage.resurrected / timegap, 2) .. "/s)."
+						.. " Chunk Cycle: " .. storage.chunkcycles .. "."
 					)
-				global.lastdebugmessage = event.tick
-				global.spawnedcount     = 0
-				global.deadedcount      = 0
-				global.killedcount      = 0
-				global.degradedcount    = 0
-				global.resurrected      = 0
+				storage.lastdebugmessage = event.tick
+				storage.spawnedcount     = 0
+				storage.deadedcount      = 0
+				storage.killedcount      = 0
+				storage.degradedcount    = 0
+				storage.resurrected      = 0
 			end
 		end
-		if global.tick <= 0 or global.tick == nil then
-			global.tick = config.ticks_between_operations
+		if storage.tick <= 0 or storage.tick == nil then
+			storage.tick = config.ticks_between_operations
 			-- Do the stuff
-			local last_surface, surface_index = next(global.surfaces, global.last_surface)
+			local last_surface, surface_index = next(storage.surfaces, storage.last_surface)
 			if surface_index then
 				local surface = game.get_surface(surface_index)
 				if surface and surface.valid then
 					local chunksdone = 0
 					local chunkstodo = config.chunks_per_operation
 					if config.chunks_per_operation_enable_scaling then --todo: Add cap on number of chunks per operation; maybe change the scaling so that it increases how often it runs instead of how many chunks
-						chunkstodo = mathfloor(chunkstodo * (global.lasttotalchunks / config.chunks_per_operation_scaling_bias))
+						chunkstodo = mathfloor(chunkstodo * (storage.lasttotalchunks / config.chunks_per_operation_scaling_bias))
 					end
 					if chunkstodo < 1 then chunkstodo = 1 end
 					repeat
-						if #global.chunks < 1 then
+						if #storage.chunks < 1 then
 							-- populate our chunk array
 							for chunk in surface.get_chunks() do
-								global.chunks[#global.chunks + 1] = chunk
+								storage.chunks[#storage.chunks + 1] = chunk
 							end
-							global.chunkcycles = global.chunkcycles + 1
-							global.lasttotalchunks = #global.chunks
+							storage.chunkcycles = storage.chunkcycles + 1
+							storage.lasttotalchunks = #storage.chunks
 						end
-						if #global.chunks < 1 then nx_debug("Bailing because no chunks!") break end
+						if #storage.chunks < 1 then nx_debug("Bailing because no chunks!") break end
 						-- Select a chunk
-						global.chunkindex = global.chunkindex + 1
-						if global.chunkindex > #global.chunks then
-							global.chunkindex = 0
-							global.chunks = {}
+						storage.chunkindex = storage.chunkindex + 1
+						if storage.chunkindex > #storage.chunks then
+							storage.chunkindex = 0
+							storage.chunks = {}
 							break
 						end
-						process_chunk(surface, global.chunks[global.chunkindex])
+						process_chunk(surface, storage.chunks[storage.chunkindex])
 						-- Done
 						chunksdone = chunksdone + 1
 					until chunksdone >= chunkstodo
 				end
 			end
-			global.last_surface = last_surface
+			storage.last_surface = last_surface
 		end
-		if global.tick > config.ticks_between_operations then
-			global.tick = config.ticks_between_operations
+		if storage.tick > config.ticks_between_operations then
+			storage.tick = config.ticks_between_operations
 		end
 	end
 end)
