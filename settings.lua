@@ -25,6 +25,15 @@ data:extend({
 		default_value = 1,
 		order = "c",
 	},
+	{
+		type = "double-setting",
+		name = "Noxys_Trees-collision_multiplier",
+		setting_type = "startup",
+		minimum_value = 0.001,
+		default_value = 1.0,
+		maximum_value = 2.0,
+		order = "d",
+	},
 	-- Global
 	{
 		type = "bool-setting",
