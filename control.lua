@@ -224,10 +224,14 @@ noxy_trees.reinforced_degradable = {
 -- Create a list for use in a filter function based of the degradable tiles.
 noxy_trees.tilefilter = {}
 for k, _ in pairs(noxy_trees.degradable) do
-  noxy_trees.tilefilter[#noxy_trees.tilefilter + 1] = k
+  if prototypes.tile[k] then
+    noxy_trees.tilefilter[#noxy_trees.tilefilter + 1] = k
+  end
 end
 for k, _ in pairs(noxy_trees.reinforced_degradable) do
-  noxy_trees.tilefilter[#noxy_trees.tilefilter + 1] = k
+  if prototypes.tile[k] then
+    noxy_trees.tilefilter[#noxy_trees.tilefilter + 1] = k
+  end
 end
 
 noxy_trees.fertility = { -- Tiles not listed here are considered non fertile (no spreading at all).
