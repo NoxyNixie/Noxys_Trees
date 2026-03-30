@@ -3,6 +3,7 @@ local noxy_trees = {}
 local mathfloor = math.floor
 local mathceil = math.ceil
 local config = {}
+local has_uranium_ore = prototypes.entity["uranium-ore"] ~= nil
 
 
 noxy_trees.disabled = { -- Disables the spreading of these specific entities.
@@ -743,7 +744,7 @@ local function spawn_trees(surface, parent, tilestoupdate, newpos)
         return
       end
       local ur = config.minimum_distance_to_uranium
-      if surface.count_entities_filtered { position = newpos, radius = ur, type = "resource", name = "uranium-ore", limit = 1 } > 0 then
+      if has_uranium_ore and surface.count_entities_filtered { position = newpos, radius = ur, type = "resource", name = "uranium-ore", limit = 1 } > 0 then
         return
       end
       local tr = config.minimum_distance_to_degradetiles
@@ -815,7 +816,7 @@ local function process_chunk(surface, chunk)
         if surface.count_entities_filtered { position = treetocheck.position, radius = er, type = "unit-spawner", force = "enemy", limit = 1 } > 0 or
             surface.count_entities_filtered { position = treetocheck.position, radius = er, type = "turret", force = "enemy", limit = 1 } > 0 then
           deadening_tree(surface, treetocheck)
-        elseif surface.count_entities_filtered { position = treetocheck.position, radius = ur, type = "resource", name = "uranium-ore", limit = 1 } > 0 then
+        elseif has_uranium_ore and surface.count_entities_filtered { position = treetocheck.position, radius = ur, type = "resource", name = "uranium-ore", limit = 1 } > 0 then
           deadening_tree(surface, treetocheck)
         else
           local rp = config.minimum_distance_to_player_entities
